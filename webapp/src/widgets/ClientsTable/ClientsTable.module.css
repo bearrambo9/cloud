@@ -1,0 +1,7 @@
+tr {
+  pointer-events: none;
+}
+
+.badgeButton:hover {
+  cursor: pointer;
+}
