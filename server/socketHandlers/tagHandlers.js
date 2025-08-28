@@ -17,8 +17,16 @@ async function getTagColors() {
 const tagHandlers = (socket, io) => {
   socket.on(
     "addTag",
-    withAuth(async (data) => {
+    withAuth(async (data, callback) => {
       const { clientId, tag } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!tag) {
+        callback({ error: "No tag" });
+      }
 
       try {
         await Tag.create({
@@ -55,6 +63,14 @@ const tagHandlers = (socket, io) => {
     "removeTag",
     withAuth(async (data) => {
       const { clientId, tag } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!tag) {
+        callback({ error: "No tag" });
+      }
 
       const result = await Client.updateOne(
         { id: clientId },

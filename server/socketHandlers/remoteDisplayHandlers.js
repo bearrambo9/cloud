@@ -11,6 +11,10 @@ const remoteDisplayHandlers = (socket, io) => {
     withAuth(async (data) => {
       const { clientId } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
@@ -31,6 +35,10 @@ const remoteDisplayHandlers = (socket, io) => {
     "displayKeyPress",
     withAuth(async (data) => {
       const { clientId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
 
       const client = await Client.findOne({ id: clientId });
 
@@ -53,6 +61,10 @@ const remoteDisplayHandlers = (socket, io) => {
     withAuth(async (data) => {
       const { clientId } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
@@ -73,6 +85,10 @@ const remoteDisplayHandlers = (socket, io) => {
     "stopRemoteDisplay",
     withAuth(async (data, callback) => {
       const { clientId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
 
       const client = await Client.findOne({ id: clientId });
 
@@ -96,6 +112,10 @@ const remoteDisplayHandlers = (socket, io) => {
     "startRemoteDisplay",
     withAuth(async (data, callback) => {
       const { clientId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
 
       const client = await Client.findOne({ id: clientId });
 

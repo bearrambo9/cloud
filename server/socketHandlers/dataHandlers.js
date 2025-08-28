@@ -7,7 +7,7 @@ async function getServerLocationData() {
     const response = await axios.get("https://ipapi.co/json/");
 
     if (!response.data.latitude || !response.data.longitude) {
-      throw new Error("Invalid geolocation data received");
+      console.log("Bad geo data recieved");
     }
 
     return {
@@ -19,6 +19,7 @@ async function getServerLocationData() {
       region: response.data.region,
     };
   } catch (error) {
+    console.log(error);
     throw error;
   }
 }
@@ -28,7 +29,6 @@ const dataHandlers = (socket, io) => {
     "getClientData",
     withAuth(async (data, callback) => {
       const { userId } = data;
-      console.log("Test");
       const record = await Client.findOne({ id: userId });
       callback(record);
     })

@@ -7,6 +7,10 @@ const ptyHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       const { clientId } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
@@ -32,6 +36,14 @@ const ptyHandlers = (socket, io) => {
     "ptyInput",
     withAuth(async (data) => {
       const { clientId, input } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!input) {
+        callback({ error: "No input" });
+      }
 
       const client = await Client.findOne({ id: clientId });
 
@@ -59,6 +71,10 @@ const ptyHandlers = (socket, io) => {
     "ptyStop",
     withAuth(async (data, callback) => {
       const { clientId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
 
       const client = await Client.findOne({ id: clientId });
 

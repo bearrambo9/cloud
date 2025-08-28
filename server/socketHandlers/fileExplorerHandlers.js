@@ -10,6 +10,10 @@ const fileExplorerHandlers = (socket, io) => {
     try {
       const clientId = socket.data.clientId;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
       const fileResult = await File.findOne({
         clientId: clientId,
         status: "inProgress",
@@ -69,6 +73,14 @@ const fileExplorerHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       const { clientId, path } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+      }
+
       try {
         if (path) {
           const client = await Client.findOne({ id: clientId });
@@ -96,6 +108,18 @@ const fileExplorerHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       const { clientId, path, newName } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+      }
+
+      if (!newName) {
+        callback({ error: "No newName" });
+      }
+
       try {
         if (path) {
           const client = await Client.findOne({ id: clientId });
@@ -107,6 +131,10 @@ const fileExplorerHandlers = (socket, io) => {
 
           const clientSocketString = client.socket;
           const target = io.sockets.sockets.get(clientSocketString);
+
+          if (!target) {
+            callback({ error: "No target" });
+          }
 
           target.emit("renamePath", { path: path, newName: newName });
 
@@ -122,6 +150,10 @@ const fileExplorerHandlers = (socket, io) => {
     "deleteClientPath",
     withAuth(async (data, callback) => {
       const { clientId, path } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
 
       try {
         if (path) {
@@ -150,6 +182,14 @@ const fileExplorerHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       const { clientId, path } = data;
 
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+      }
+
       try {
         if (path) {
           const client = await Client.findOne({ id: clientId });
@@ -177,6 +217,10 @@ const fileExplorerHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       try {
         const { clientId } = data;
+
+        if (!clientId) {
+          callback({ error: "No clientId" });
+        }
 
         const client = await Client.findOne({ id: clientId });
 
