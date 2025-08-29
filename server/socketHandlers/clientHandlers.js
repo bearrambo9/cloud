@@ -15,7 +15,7 @@ const clientHandlers = (socket, io) => {
 
     const { ip, username, os, id, fingerprint, last_seen } = data;
 
-    if (!ip || username || id || fingerprint || last_seen) {
+    if (!ip || !username || !id || !fingerprint || !last_seen) {
       callback({ error: "Please complete all fields" });
       return;
     }
