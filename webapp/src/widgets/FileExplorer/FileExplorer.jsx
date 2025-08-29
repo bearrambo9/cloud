@@ -5,6 +5,8 @@ import { useMantineColorScheme } from "@mantine/core";
 import { FileExplorerLeaf } from "../../components/FileExplorerLeaf/FileExplorerLeaf";
 import { useFileContextMenu } from "../../hooks/useFileContextMenu";
 import { FileContextMenu } from "../../components/FileContextMenu/FileContextMenu";
+import { useDirectoryContextMenu } from "../../hooks/useDirectoryContextMenu";
+import { DirectoryContextMenu } from "../../components/DirectoryContextMenu/DirectoryContextMenu";
 import { useEffect, useState } from "react";
 import { Dropzone } from "@mantine/dropzone";
 import { notifications } from "@mantine/notifications";
@@ -20,6 +22,12 @@ function FileExplorer() {
   const [data, setData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const { menuState, ref, handleContextMenu, closeMenu } = useFileContextMenu();
+  const {
+    dirContextMenuState,
+    dirContextMenuRef,
+    handleDirContextMenu,
+    closeDirMenu,
+  } = useDirectoryContextMenu();
 
   function updateContents() {
     socket.emit(
@@ -54,6 +62,46 @@ function FileExplorer() {
         }
       );
     }
+  };
+
+  const handleCreateFolder = (path) => {
+    const folderName = prompt("New folder name:");
+
+    if (folderName) {
+      socket.emit(
+        "createClientFolder",
+        {
+          token: localStorage.getItem("token"),
+          clientId: params.clientId.replace(":", ""),
+          path: `${path}/${folderName}`,
+        },
+        () => {
+          updateContents();
+        }
+      );
+    }
+
+    closeDirMenu();
+  };
+
+  const handleCreateFile = (path) => {
+    const fileName = prompt("New file name:");
+
+    if (fileName) {
+      socket.emit(
+        "createClientFile",
+        {
+          token: localStorage.getItem("token"),
+          clientId: params.clientId.replace(":", ""),
+          path: `${path}/${fileName}`,
+        },
+        () => {
+          updateContents();
+        }
+      );
+    }
+
+    closeDirMenu();
   };
 
   function getParentDirectory(path) {
@@ -250,7 +298,10 @@ function FileExplorer() {
   }, [directoryPath]);
 
   return (
-    <div>
+    <div
+      style={{ height: "100vh" }}
+      onContextMenu={(e) => handleDirContextMenu(e, directoryPath)}
+    >
       <Group>
         <ActionIcon onClick={back} variant={"transparent"}>
           <IconChevronLeft
@@ -303,6 +354,13 @@ function FileExplorer() {
         onOpen={handleOpen}
         onDelete={handleDelete}
         onRename={handleRename}
+      />
+      <DirectoryContextMenu
+        menuState={dirContextMenuState}
+        menuRef={dirContextMenuRef}
+        onClose={closeDirMenu}
+        onCreateFolder={handleCreateFolder}
+        onCreateFile={handleCreateFile}
       />
     </div>
   );

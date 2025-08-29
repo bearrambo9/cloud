@@ -36,6 +36,10 @@ const fileExplorerHandlers = (socket, io) => {
       const creatorClient = await User.findOne({ email: email });
       const client = await Client.findOne({ id: clientId });
 
+      if (!client) {
+        callback({ error: "No client" });
+      }
+
       clone.creator = creatorClient.name;
       clone.username = client.username;
 
@@ -49,7 +53,7 @@ const fileExplorerHandlers = (socket, io) => {
                 `/${fileName}-${clientId}`,
               (err) => {
                 if (err) {
-                  console.log(err);
+                  console.log(`Error uploading ${fileName}`);
                   return err;
                 }
               }
@@ -86,12 +90,16 @@ const fileExplorerHandlers = (socket, io) => {
           const client = await Client.findOne({ id: clientId });
 
           if (!client) {
-            console.log(`Client not found: ${clientId}`);
+            callback({ error: "No client" });
             return;
           }
 
           const clientSocketString = client.socket;
           const target = io.sockets.sockets.get(clientSocketString);
+
+          if (!target) {
+            callback({ error: "No target" });
+          }
 
           target.emit("getPathData", { path: path }, (pathData) => {
             callback(pathData);
@@ -125,7 +133,7 @@ const fileExplorerHandlers = (socket, io) => {
           const client = await Client.findOne({ id: clientId });
 
           if (!client) {
-            console.log(`Client not found: ${clientId}`);
+            console.log("No client");
             return;
           }
 
@@ -160,19 +168,23 @@ const fileExplorerHandlers = (socket, io) => {
           const client = await Client.findOne({ id: clientId });
 
           if (!client) {
-            console.log(`Client not found: ${clientId}`);
+            callback({ error: "No clientId" });
             return;
           }
 
           const clientSocketString = client.socket;
           const target = io.sockets.sockets.get(clientSocketString);
 
+          if (!target) {
+            callback({ error: "No target" });
+          }
+
           target.emit("deletePath", { path: path });
 
           callback();
         }
       } catch {
-        callback({ error: "Couldn't find target!" });
+        callback({ error: "No target" });
       }
     })
   );
@@ -195,19 +207,22 @@ const fileExplorerHandlers = (socket, io) => {
           const client = await Client.findOne({ id: clientId });
 
           if (!client) {
-            console.log(`Client not found: ${clientId}`);
-            return;
+            console.log(`No client`);
           }
 
           const clientSocketString = client.socket;
           const target = io.sockets.sockets.get(clientSocketString);
+
+          if (!target) {
+            callback({ error: "No target" });
+          }
 
           target.emit("getFileData", { path: path }, (fileData) => {
             callback(fileData);
           });
         }
       } catch {
-        callback({ error: "Couldn't find target!" });
+        callback({ error: "No target" });
       }
     })
   );
@@ -225,8 +240,7 @@ const fileExplorerHandlers = (socket, io) => {
         const client = await Client.findOne({ id: clientId });
 
         if (!client) {
-          console.log(`Client not found: ${clientId}`);
-          return;
+          callback({ error: "No client" });
         }
 
         const clientSocketString = client.socket;
@@ -238,6 +252,70 @@ const fileExplorerHandlers = (socket, io) => {
       } catch {
         callback({ error: "Couldn't find target!" });
       }
+    })
+  );
+
+  socket.on(
+    "createClientFile",
+    withAuth(async (data, callback) => {
+      const { clientId, path } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No client" });
+      }
+
+      target.emit("createFile", { path: path }, () => {
+        callback();
+      });
+    })
+  );
+
+  socket.on(
+    "createClientFolder",
+    withAuth(async (data, callback) => {
+      const { clientId, path } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No client" });
+      }
+
+      target.emit("createFolder", { path: path }, () => {
+        callback();
+      });
     })
   );
 };

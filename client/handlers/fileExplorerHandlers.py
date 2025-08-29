@@ -1,5 +1,6 @@
 import os
 import requests
+import shutil
 
 class FileExplorerHandlers:
     def __init__(self, socketClient, url):
@@ -13,7 +14,31 @@ class FileExplorerHandlers:
         self.sio.on('getFileData')(self.getFileData)
         self.sio.on('getPathData')(self.getPathData)
         self.sio.on('getRoot')(self.getRoot)
+        self.sio.on('createFolder')(self.createFolder)
+        self.sio.on('createFile')(self.createFile)
     
+    def createFile(self, data):
+        path = data['path']
+
+        if (os.path.exists(path)):
+            return {"error": "Path already exists"}
+        else:
+            try:
+                f = open(path, "x")
+            except:
+                return {"error": "Could not create directory"}
+            
+    def createFolder(self, data):
+        path = data['path']
+
+        if (os.path.exists(path)):
+            return {"error": "Path already exists"}
+        else:
+            try:
+                os.makedirs(path)
+            except:
+                return {"error": "Could not create directory"}
+
     def renamePath(self, data):
         path = data['path']
         name = data['newName']
@@ -27,7 +52,10 @@ class FileExplorerHandlers:
         path = data['path']
         
         try:
-            os.remove(path)
+            if (os.path.isfile(path)):
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
         except:
             pass
     
