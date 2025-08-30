@@ -16,6 +16,27 @@ class FileExplorerHandlers:
         self.sio.on('getRoot')(self.getRoot)
         self.sio.on('createFolder')(self.createFolder)
         self.sio.on('createFile')(self.createFile)
+        self.sio.on('saveFileContents')(self.saveFileContents)
+        self.sio.on('getShortcut')(self.getShortcut)
+
+    def getShortcut(self, data):
+        shortcutName = data['shortcutName']
+        shortcutPath = os.path.expanduser(f"~/{shortcutName}")
+        shortcutPath = shortcutPath.replace("\\", "/")
+
+        return {"shortcutPath": shortcutPath}
+
+    def saveFileContents(self, data):
+        fileData = data['fileData']
+        path = data['path']
+
+        try:
+            with open(path, "w") as f:
+                f.write(fileData)
+            
+            return {"status": "success", "file": os.path.basename(path)}
+        except:
+            pass
     
     def createFile(self, data):
         path = data['path']

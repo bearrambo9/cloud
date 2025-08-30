@@ -12,6 +12,7 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       const fileResult = await File.findOne({
@@ -38,6 +39,7 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!client) {
         callback({ error: "No client" });
+        return;
       }
 
       clone.creator = creatorClient.name;
@@ -79,10 +81,12 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       if (!path) {
         callback({ error: "No path" });
+        return;
       }
 
       try {
@@ -99,6 +103,7 @@ const fileExplorerHandlers = (socket, io) => {
 
           if (!target) {
             callback({ error: "No target" });
+            return;
           }
 
           target.emit("getPathData", { path: path }, (pathData) => {
@@ -107,6 +112,7 @@ const fileExplorerHandlers = (socket, io) => {
         }
       } catch {
         callback({ error: "Couldn't find target!" });
+        return;
       }
     })
   );
@@ -118,14 +124,17 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       if (!path) {
         callback({ error: "No path" });
+        return;
       }
 
       if (!newName) {
         callback({ error: "No newName" });
+        return;
       }
 
       try {
@@ -142,6 +151,7 @@ const fileExplorerHandlers = (socket, io) => {
 
           if (!target) {
             callback({ error: "No target" });
+            return;
           }
 
           target.emit("renamePath", { path: path, newName: newName });
@@ -161,6 +171,7 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       try {
@@ -177,6 +188,7 @@ const fileExplorerHandlers = (socket, io) => {
 
           if (!target) {
             callback({ error: "No target" });
+            return;
           }
 
           target.emit("deletePath", { path: path });
@@ -196,10 +208,12 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       if (!path) {
         callback({ error: "No path" });
+        return;
       }
 
       try {
@@ -215,6 +229,7 @@ const fileExplorerHandlers = (socket, io) => {
 
           if (!target) {
             callback({ error: "No target" });
+            return;
           }
 
           target.emit("getFileData", { path: path }, (fileData) => {
@@ -235,12 +250,14 @@ const fileExplorerHandlers = (socket, io) => {
 
         if (!clientId) {
           callback({ error: "No clientId" });
+          return;
         }
 
         const client = await Client.findOne({ id: clientId });
 
         if (!client) {
           callback({ error: "No client" });
+          return;
         }
 
         const clientSocketString = client.socket;
@@ -262,16 +279,19 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       if (!path) {
         callback({ error: "No path" });
+        return;
       }
 
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
         callback({ error: "No client" });
+        return;
       }
 
       const clientSocketString = client.socket;
@@ -279,6 +299,7 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!target) {
         callback({ error: "No client" });
+        return;
       }
 
       target.emit("createFile", { path: path }, () => {
@@ -294,28 +315,113 @@ const fileExplorerHandlers = (socket, io) => {
 
       if (!clientId) {
         callback({ error: "No clientId" });
+        return;
       }
 
       if (!path) {
         callback({ error: "No path" });
+        return;
       }
 
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
         callback({ error: "No client" });
+        return;
       }
 
       const clientSocketString = client.socket;
       const target = io.sockets.sockets.get(clientSocketString);
 
       if (!target) {
-        callback({ error: "No client" });
+        callback({ error: "No target" });
+        return;
       }
 
       target.emit("createFolder", { path: path }, () => {
         callback();
       });
+    })
+  );
+
+  socket.on(
+    "getClientShortcut",
+    withAuth(async (data, callback) => {
+      const { clientId, shortcutName } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+        return;
+      }
+
+      if (!shortcutName) {
+        callback({ error: "No shortcut name" });
+        return;
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+        return;
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No target" });
+        return;
+      }
+
+      target.emit("getShortcut", { shortcutName: shortcutName }, (data) => {
+        callback(data);
+      });
+    })
+  );
+
+  socket.on(
+    "saveClientFileContents",
+    withAuth(async (data, callback) => {
+      const { clientId, fileData, path } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+        return;
+      }
+
+      if (!path) {
+        callback({ error: "No path" });
+        return;
+      }
+
+      if (!fileData) {
+        callback({ error: "No fileData" });
+        return;
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+        return;
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No target" });
+        return;
+      }
+
+      target.emit(
+        "saveFileContents",
+        { fileData: fileData, path: path },
+        (data) => {
+          callback(data);
+        }
+      );
     })
   );
 };

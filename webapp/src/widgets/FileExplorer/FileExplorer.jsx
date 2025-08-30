@@ -1,5 +1,15 @@
-import { ActionIcon, Group, Textarea, TextInput, Tree } from "@mantine/core";
-import { IconCheck, IconChevronLeft } from "@tabler/icons-react";
+import {
+  ActionIcon,
+  Group,
+  Textarea,
+  TextInput,
+  Tree,
+  Loader,
+  Text,
+  Popover,
+  Badge,
+} from "@mantine/core";
+import { IconCheck, IconChevronLeft, IconUpload } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
 import { useMantineColorScheme } from "@mantine/core";
 import { FileExplorerLeaf } from "../../components/FileExplorerLeaf/FileExplorerLeaf";
@@ -12,13 +22,16 @@ import { Dropzone } from "@mantine/dropzone";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import socket from "../../shared/api/socket";
+import { useDisclosure } from "@mantine/hooks";
 
 function FileExplorer() {
   const params = useParams();
   const { colorScheme } = useMantineColorScheme();
   const [directoryPath, setDirectoryPath] = useState("");
-  const [filePath, setFilePath] = useState("");
-  const [fileData, setFileData] = useState();
+  const [opened, { close, open }] = useDisclosure(false);
+  const [selectedFilePath, setSelectedFilePath] = useState("");
+  const [fileData, setFileData] = useState("");
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [data, setData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const { menuState, ref, handleContextMenu, closeMenu } = useFileContextMenu();
@@ -151,10 +164,12 @@ function FileExplorer() {
   function onPathClick(clickedPath, isFolder) {
     if (isFolder) {
       setDirectoryPath(clickedPath);
-      setFilePath("");
-      setFileData();
+      setSelectedFilePath("");
+      setFileData("");
     } else {
-      setFilePath(clickedPath);
+      setSelectedFilePath(clickedPath);
+      setIsLoadingFile(true);
+      setFileData("");
 
       socket.emit(
         "getClientFileData",
@@ -164,16 +179,18 @@ function FileExplorer() {
           path: clickedPath,
         },
         (data) => {
-          setFileData(data);
+          setFileData(data || "");
+          setIsLoadingFile(false);
         }
       );
     }
   }
 
   function back() {
-    if (fileData) {
-      setFileData();
-      setFilePath("");
+    if (selectedFilePath) {
+      setSelectedFilePath("");
+      setFileData("");
+      setIsLoadingFile(false);
       return;
     }
 
@@ -191,6 +208,11 @@ function FileExplorer() {
       setDirectoryPath(currentPath.substring(0, lastSlash + 1));
     }
   }
+
+  // Handle file data changes (for saving edited content)
+  const handleFileDataChange = (event) => {
+    setFileData(event.currentTarget.value);
+  };
 
   useEffect(() => {
     socket.emit(
@@ -276,6 +298,45 @@ function FileExplorer() {
     }
   }
 
+  function saveFileContents() {
+    socket.emit(
+      "saveClientFileContents",
+      {
+        token: localStorage.getItem("token"),
+        fileData: fileData,
+        clientId: params.clientId.replace(":", ""),
+        path: selectedFilePath,
+      },
+      (data) => {
+        if (data.status == "success") {
+          notifications.show({
+            color: "green",
+            icon: <IconCheck />,
+            title: `Saved ${data.file}'s contents successfully`,
+          });
+        }
+      }
+    );
+  }
+
+  function getShortcut(shortcutName) {
+    socket.emit(
+      "getClientShortcut",
+      {
+        token: localStorage.getItem("token"),
+        clientId: params.clientId.replace(":", ""),
+        shortcutName: shortcutName,
+      },
+      (data) => {
+        if (data["shortcutPath"]) {
+          setFileData();
+          setSelectedFilePath("");
+          setDirectoryPath(data["shortcutPath"]);
+        }
+      }
+    );
+  }
+
   function search(event) {
     event.preventDefault();
     setDirectoryPath(searchValue);
@@ -309,11 +370,99 @@ function FileExplorer() {
             size={28}
           />
         </ActionIcon>
-        <h1>{fileData ? filePath : directoryPath}</h1>
+        <h1>{selectedFilePath || directoryPath}</h1>
       </Group>
 
-      {fileData ? (
-        <Textarea autosize maxRows={25} value={fileData} readOnly />
+      <Group>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Desktop")}
+        >
+          Desktop
+        </Badge>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Documents")}
+        >
+          Documents
+        </Badge>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Downloads")}
+        >
+          Downloads
+        </Badge>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Pictures")}
+        >
+          Pictures
+        </Badge>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Videos")}
+        >
+          Videos
+        </Badge>
+        <Badge
+          size={"lg"}
+          my={"sm"}
+          onMouseEnter={(e) => (e.target.style.cursor = "pointer")}
+          onClick={() => getShortcut("Music")}
+        >
+          Music
+        </Badge>
+      </Group>
+
+      {selectedFilePath ? (
+        <div>
+          <Popover position={"top"} shadow={"md"} opened={opened}>
+            <Popover.Target>
+              <ActionIcon
+                onClick={() => saveFileContents()}
+                my={"md"}
+                variant={"filled"}
+                aria-label={"Save"}
+              >
+                <IconUpload
+                  onMouseEnter={open}
+                  onMouseLeave={close}
+                  style={{ width: "70%", height: "70%" }}
+                  stroke={1.5}
+                />
+              </ActionIcon>
+            </Popover.Target>
+            <Popover.Dropdown style={{ pointerEvents: "none" }}>
+              <Text size="sm">Save file contents</Text>
+            </Popover.Dropdown>
+          </Popover>
+          {isLoadingFile ? (
+            <Group>
+              <Loader size="sm" />
+              <Text>Loading file content...</Text>
+            </Group>
+          ) : null}
+          <Textarea
+            autosize
+            maxRows={25}
+            value={fileData}
+            onChange={handleFileDataChange}
+            placeholder={
+              isLoadingFile ? "Loading..." : "File content will appear here..."
+            }
+            disabled={isLoadingFile}
+          />
+        </div>
       ) : (
         <div>
           <form onSubmit={(event) => search(event)}>
