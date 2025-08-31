@@ -25,7 +25,7 @@ axios.defaults.withCredentials = true;
 
 function App() {
   return (
-    <MantineProvider defaultColorScheme={"auto"}>
+    <MantineProvider forceColorScheme="dark">
       <Notifications />
       <Router>
         <Routes>
