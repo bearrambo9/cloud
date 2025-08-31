@@ -38,8 +38,11 @@ function RemoteDisplay() {
       }
     );
 
-    socket.on("displayData", (data) => {
-      setDisplayData(data.displayData);
+    let frameCount = 0;
+    let startTime = Date.now();
+
+    socket.on("udpData", (data) => {
+      setDisplayData(data.data);
     });
 
     const userAgent = navigator.userAgent;

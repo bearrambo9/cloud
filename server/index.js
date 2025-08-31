@@ -4,6 +4,8 @@ const http = require("http");
 const app = express();
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const dgram = require("dgram");
+const udpServer = dgram.createSocket("udp4");
 const path = require("path");
 const io = new Server(server, {
   cors: {
@@ -36,6 +38,24 @@ app.get("/download", (req, res) => {
 app.use("/", require("./routes/authRoute"));
 app.use("/", require("./routes/uploadRoute")(io));
 
+// RemoteDisplay UDP Server
+
+udpServer.on("message", (msg) => {
+  const frameId = msg.readUInt32BE(0);
+
+  const headerEnd = msg.indexOf(Buffer.from("|"), 12);
+  const clientId = msg.slice(12, headerEnd).toString("utf8");
+  const jpegData = msg.slice(headerEnd + 1);
+
+  const base64Data = jpegData.toString("base64");
+
+  io.to(clientId).emit("udpData", {
+    frameId: frameId,
+    clientId: clientId,
+    data: base64Data,
+  });
+});
+
 io.on("connection", (socket) => {
   clientHandlers(socket, io);
   ptyHandlers(socket, io);
@@ -46,3 +66,4 @@ io.on("connection", (socket) => {
 });
 
 server.listen(process.env.PORT || 3000);
+udpServer.bind(process.env.UDP_PORT || 9999);

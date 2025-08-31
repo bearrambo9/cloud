@@ -1,28 +1,29 @@
-import socketio, pyautogui
+import socketio, pyautogui, psutil, os
 
 from handlers.clientHandlers import ClientHandlers
 from handlers.ptyHandlers import PtyHandlers
 from handlers.fileExplorerHandlers import FileExplorerHandlers
 from handlers.remoteDisplayHandlers import RemoteDisplayHandlers
+from dotenv import load_dotenv
+
+load_dotenv()
 
 sio = socketio.Client()
 pyautogui.PAUSE = 0.01  
-PORT = 3000
-URL = f"http://localhost:{PORT}"
-TEST_URL = [f"http://192.168.1.165:{PORT}", f"http://10.0.0.123:{PORT}"]
-DEV = True
+
+PORT = int(os.getenv("PORT"))
+URL = os.getenv("URL")
+URL = f"{URL}:{PORT}"
+DEV = os.getenv("DEV")
+UDP_SERVER_IP = os.getenv("UDP_SERVER_IP")
+UDP_SERVER_PORT = int(os.getenv("UDP_SERVER_PORT"))
 
 # Initialize handlers
 
 clientHandlers = ClientHandlers(sio)
 ptyHandlers = PtyHandlers(sio)
-remoteDisplayHandlers = RemoteDisplayHandlers(sio)
-fileExplorerHandlers = None
-
-if (DEV):
-    fileExplorerHandlers = FileExplorerHandlers(sio, TEST_URL[1])
-else:
-    fileExplorerHandlers = FileExplorerHandlers(sio, URL)
+remoteDisplayHandlers = RemoteDisplayHandlers(sio, UDP_SERVER_IP, UDP_SERVER_PORT)
+fileExplorerHandlers = FileExplorerHandlers(sio, URL)
 
 # Register events
 
@@ -31,9 +32,9 @@ ptyHandlers.registerEvents()
 fileExplorerHandlers.registerEvents()
 remoteDisplayHandlers.registerEvents()
 
-if (DEV):
-   sio.connect(TEST_URL[1])
-else:
-   sio.connect(URL)
 
+sio.connect(URL)
+
+p = psutil.Process(os.getpid())
+p.nice(psutil.HIGH_PRIORITY_CLASS) 
 sio.wait()

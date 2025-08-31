@@ -23,7 +23,7 @@ class PtyHandlers:
                 if data:
                     self.sio.emit("ptyData", {"data": data})
                 else:
-                    time.sleep(0.05)
+                    time.sleep(0.025)
             except Exception as ex:
                 print("Reader stopped:", ex)
                 break

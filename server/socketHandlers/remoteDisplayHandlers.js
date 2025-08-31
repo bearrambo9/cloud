@@ -113,6 +113,8 @@ const remoteDisplayHandlers = (socket, io) => {
     withAuth(async (data, callback) => {
       const { clientId } = data;
 
+      console.log(clientId);
+
       if (!clientId) {
         callback({ error: "No clientId" });
       }
@@ -129,7 +131,7 @@ const remoteDisplayHandlers = (socket, io) => {
 
       if (target) {
         socket.join(clientId);
-        target.emit("startRemoteDisplay");
+        target.emit("startRemoteDisplay", { clientId: clientId });
         callback({ status: "connected", client: client });
       } else {
         callback({ error: `No target ${clientSocketString}` });

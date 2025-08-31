@@ -1,17 +1,24 @@
 import threading
 import pyautogui
-import mss
-import io
-from PIL import Image
-import base64
+import numpy as np
+import struct
+import socket
+import cv2
 import time
+import win32gui
+import win32ui
+import win32con
 
 class RemoteDisplayHandlers:
-    def __init__(self, socketClient):
+    def __init__(self, socketClient, udpServerIp, udpServerPort):
         self.sio = socketClient
-        self.remoteDisplayThread = None
         self.remoteDisplayActive = False
+        self.remoteDisplayThread = None
         self.screenWidth, self.screenHeight = pyautogui.size()
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udpServerAddr = (udpServerIp, udpServerPort)
+        self.frameId = 0
     
     def registerEvents(self):
         self.sio.on('startRemoteDisplay')(self.startRemoteDisplay)
@@ -20,42 +27,66 @@ class RemoteDisplayHandlers:
         self.sio.on('mouseClick')(self.mouseClick)
         self.sio.on('keyPress')(self.keyPress)
     
-    def captureDesktopScreenshot(self):
-        try:
-            with mss.mss() as sct:
-                screenshot = sct.grab(sct.monitors[1])
-                
-                img = Image.frombytes("RGB", screenshot.size, screenshot.bgra, "raw", "BGRX")
-                
-                new_width = img.width // 2
-                new_height = img.height // 2
-                img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                
-                buffer = io.BytesIO()
-                img.save(buffer, format="JPEG", quality=60, optimize=True)
-                
-                encoded = base64.b64encode(buffer.getvalue()).decode()
-                return encoded
-        except: 
-            pass
+    def fastCaptureScreen(self):
+        hwnd = win32gui.GetDesktopWindow()
+        hdc = win32gui.GetWindowDC(hwnd)
+        hcdc = win32ui.CreateDCFromHandle(hdc)
+        hmdc = hcdc.CreateCompatibleDC()
+        
+        hbmp = win32ui.CreateBitmap()
+        hbmp.CreateCompatibleBitmap(hcdc, self.screenWidth, self.screenHeight)
+        hmdc.SelectObject(hbmp)
+        
+        hmdc.BitBlt((0, 0), (self.screenWidth, self.screenHeight), hcdc, (0, 0), win32con.SRCCOPY)
+        
+        bmpstr = hbmp.GetBitmapBits(True)
+        img = np.frombuffer(bmpstr, dtype='uint8')
+        img = img.reshape((self.screenHeight, self.screenWidth, 4))
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+        
+        win32gui.DeleteObject(hbmp.GetHandle())
+        hmdc.DeleteDC()
+        hcdc.DeleteDC()
+        win32gui.ReleaseDC(hwnd, hdc)
+        
+        return img
     
     def remoteDisplay(self):
         while self.remoteDisplayActive:
             try:
-                self.sio.emit("displayData", {"displayData": self.captureDesktopScreenshot()})
-                time.sleep(0.06)
+                img = self.fastCaptureScreen()
+                img = cv2.resize(img, (960, 540)) 
+                
+                encodeParam = [int(cv2.IMWRITE_JPEG_QUALITY), 40]
+                _, buffer = cv2.imencode('.jpg', img, encodeParam)
+                
+                timestamp = int(time.time() * 1000)
+                clientIdBytes = (self.clientId + '|').encode('utf-8')
+                header = struct.pack('!IQ', self.frameId, timestamp) + clientIdBytes
+                packet = header + buffer.tobytes()
+                
+                try:
+                    self.sock.sendto(packet, self.udpServerAddr)
+                except Exception as ex:
+                    print(f"UDP send error: {ex}")
+                
+                self.frameId += 1
+                time.sleep(1/60)
             except Exception as ex:
-                print("Reader stopped:", ex)
+                print(f"Remote display error: {ex}")
                 break
     
-    def startRemoteDisplay(self):
+    def startRemoteDisplay(self, data):
+        self.clientId = data['clientId']
         self.remoteDisplayActive = True
         self.remoteDisplayThread = threading.Thread(target=self.remoteDisplay, daemon=True)
         self.remoteDisplayThread.start()
     
     def stopRemoteDisplay(self):
         self.remoteDisplayActive = False
-        self.remoteDisplayThread.join(timeout=5.0)
+        if self.remoteDisplayThread:
+            self.remoteDisplayThread.join()
+            self.remoteDisplayThread = None
     
     def mouseMove(self, data):
         try:
