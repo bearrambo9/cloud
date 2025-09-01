@@ -40,7 +40,7 @@ function ClientsTable() {
   }
 
   function onReverseShellClick(client) {
-    location.href = `/shell/:${client}`;
+    location.href = `/shell/${client}`;
   }
 
   function onFileExplorerClick(client) {

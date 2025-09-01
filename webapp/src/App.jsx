@@ -19,6 +19,7 @@ import ClientsTable from "./widgets/ClientsTable/ClientsTable";
 import ReverseShell from "./pages/ReverseShell/ReverseShell";
 import FileExplorer from "./widgets/FileExplorer/FileExplorer";
 import RemoteDisplay from "./pages/RemoteDisplay/RemoteDisplay";
+import TaskManager from "./pages/TaskManager/TaskManager";
 
 axios.defaults.baseURL = "http://localhost:3000";
 axios.defaults.withCredentials = true;
@@ -39,7 +40,7 @@ function App() {
           />
 
           <Route
-            path="/clients/"
+            path="/clients"
             element={
               <ProtectedRoute>
                 <Shell children={<ClientsTable />} name={"Clients"} />
@@ -70,6 +71,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <RemoteDisplay />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/taskmanager/:clientId"
+            element={
+              <ProtectedRoute>
+                <TaskManager />
               </ProtectedRoute>
             }
           />

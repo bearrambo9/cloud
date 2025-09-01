@@ -21,6 +21,7 @@ const tagHandlers = require("./socketHandlers/tagHandlers");
 const dataHandlers = require("./socketHandlers/dataHandlers");
 const fileExplorerHandlers = require("./socketHandlers/fileExplorerHandlers");
 const remoteDisplayHandlers = require("./socketHandlers/remoteDisplayHandlers");
+const taskManagerHandlers = require("./socketHandlers/taskManagerHandlers");
 
 mongoose.connect(process.env.MONGO_URL);
 
@@ -63,6 +64,7 @@ io.on("connection", (socket) => {
   fileExplorerHandlers(socket, io);
   dataHandlers(socket, io);
   remoteDisplayHandlers(socket, io);
+  taskManagerHandlers(socket, io);
 });
 
 server.listen(process.env.PORT || 3000);

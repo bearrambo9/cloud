@@ -4,6 +4,7 @@ from handlers.clientHandlers import ClientHandlers
 from handlers.ptyHandlers import PtyHandlers
 from handlers.fileExplorerHandlers import FileExplorerHandlers
 from handlers.remoteDisplayHandlers import RemoteDisplayHandlers
+from handlers.taskManagerHandlers import TaskManagerHandlers
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,6 +25,7 @@ clientHandlers = ClientHandlers(sio)
 ptyHandlers = PtyHandlers(sio)
 remoteDisplayHandlers = RemoteDisplayHandlers(sio, UDP_SERVER_IP, UDP_SERVER_PORT)
 fileExplorerHandlers = FileExplorerHandlers(sio, URL)
+taskManagerHandlers = TaskManagerHandlers(sio)
 
 # Register events
 
@@ -31,6 +33,7 @@ clientHandlers.registerEvents()
 ptyHandlers.registerEvents()
 fileExplorerHandlers.registerEvents()
 remoteDisplayHandlers.registerEvents()
+taskManagerHandlers.registerEvents()
 
 
 sio.connect(URL)

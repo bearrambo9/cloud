@@ -1,4 +1,3 @@
-// components/ClientContextMenu/ClientContextMenu.jsx
 import { Paper, Menu } from "@mantine/core";
 import {
   IconSettings,
@@ -6,7 +5,10 @@ import {
   IconTag,
   IconFolder,
   IconDeviceDesktop,
+  IconChartLine,
 } from "@tabler/icons-react";
+import { openTaskManager } from "../../shared/utils/openTaskManager";
+import { useEffect } from "react";
 
 export function ClientContextMenu({
   menuState,
@@ -40,12 +42,16 @@ export function ClientContextMenu({
         <Menu.Dropdown>
           <Menu.Sub>
             <Menu.Sub.Target>
-              <Menu.Sub.Item leftSection={<IconSettings size={14} />}>
+              <Menu.Sub.Item
+                disabled={menuState.client.connected ? false : true}
+                leftSection={<IconSettings size={14} />}
+              >
                 Administration
               </Menu.Sub.Item>
             </Menu.Sub.Target>
 
             <Menu.Item
+              disabled={menuState.client.connected ? false : true}
               leftSection={<IconTag size={14} />}
               onClick={onAddTagClick}
             >
@@ -70,6 +76,12 @@ export function ClientContextMenu({
                 onClick={() => onRemoteDisplayClick(menuState.client.id)}
               >
                 Remote Display
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconChartLine size={14} />}
+                onClick={() => openTaskManager(menuState.client.id)}
+              >
+                Task Manager
               </Menu.Item>
             </Menu.Sub.Dropdown>
           </Menu.Sub>

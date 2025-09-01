@@ -209,7 +209,6 @@ function FileExplorer() {
     }
   }
 
-  // Handle file data changes (for saving edited content)
   const handleFileDataChange = (event) => {
     setFileData(event.currentTarget.value);
   };
