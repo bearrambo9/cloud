@@ -1,4 +1,4 @@
-## ⚠ Note: *this tool is not stable for use yet, and errors are expected! Soon, these will be fixed as the project is currently in development.*
+## ⚠ Note: _this tool is not stable for use yet, and errors are expected! Soon, these will be fixed as the project is currently in development._
 
 # Cloud RAT
 
@@ -6,10 +6,11 @@ Cloud RAT is a Windows remote administration tool that is controlled through the
 employee monitoring, and IT professionals. This tool is a project by me for a highschool tech project.
 
 ## Features:
+
 - X-term shell ✅
 - File explorer ✅
-- Remote display ⚠ *(this feature is currently working, but is still in progress)*
-
+- Remote display ✅
+- Task Manager ⚠
 
 Soon, more features will be added.
 
