@@ -1,9 +1,8 @@
 ## ⚠ Note: _this tool is not stable for use yet, and errors are expected! Soon, these will be fixed as the project is currently in development._
 
-# Cloud RAT
+# Cloud Administration Platform
 
-Cloud RAT is a Windows remote administration tool that is controlled through the browser. Cloud RAT's intended usage is for user support,
-employee monitoring, and IT professionals. This tool is a project by me for a highschool tech project.
+Cloud Administration Platform is a Windows remote administration tool that is controlled through the browser. Cloud's intended usage is to remotely manage, monitor, and troubleshoot devices for educational or IT enterprise purposes. This tool is a project by me for a highschool tech project.
 
 ## Features:
 
