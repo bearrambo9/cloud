@@ -12,30 +12,46 @@ function TaskManager() {
   const [backgroundProcesses, setBackgroundProcesses] = useState([]);
 
   useEffect(() => {
+    const sort = (data) => {
+      var apps = [];
+      var backgroundApps = [];
+
+      data.forEach((process) => {
+        if (process.type == "app") {
+          apps.push(process);
+        } else {
+          backgroundApps.push(process);
+        }
+      });
+
+      return [apps, backgroundApps];
+    };
+
     socket.emit(
-      "getClientProcesses",
+      "startTaskManager",
       {
         token: localStorage.getItem("token"),
         clientId: params.clientId.replace(":", ""),
       },
       (data) => {
-        var apps = [];
-        var backgroundApps = [];
+        const sorted = sort(data);
 
-        data.forEach((process) => {
-          if (process.type == "app") {
-            apps.push(process);
-          } else {
-            backgroundApps.push(process);
-          }
-        });
-
-        setProcesses(apps);
-        setBackgroundProcesses(backgroundApps);
-
+        setProcesses(sorted[0]);
+        setBackgroundProcesses(sorted[1]);
         toggle();
       }
     );
+
+    socket.on("taskManagerData", (data) => {
+      const sorted = sort(data);
+
+      if (visible) {
+        toggle();
+      }
+
+      setProcesses(sorted[0]);
+      setBackgroundProcesses(sorted[1]);
+    });
   }, []);
 
   return (

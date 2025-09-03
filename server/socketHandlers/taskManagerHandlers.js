@@ -1,13 +1,13 @@
 const { withAuth } = require("../utils/tokenValidator");
 const Client = require("../models/Client");
-const User = require("../models/User");
-const File = require("../models/File");
-const fs = require("fs");
-const path = require("path");
 
 const taskManagerHandlers = (socket, io) => {
+  socket.on("taskManagerData", (data) => {
+    io.to(`tm-${socket.data.clientId}`).emit("taskManagerData", data);
+  });
+
   socket.on(
-    "getClientProcesses",
+    "startTaskManager",
     withAuth(async (data, callback) => {
       const { clientId } = data;
 
@@ -30,8 +30,8 @@ const taskManagerHandlers = (socket, io) => {
         callback({ error: "No target" });
         return;
       }
-
-      target.emit("getProcesses", (data) => {
+      target.emit("startTaskManager", (data) => {
+        socket.join(`tm-${clientId}`);
         callback(data);
       });
     })

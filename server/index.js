@@ -50,7 +50,7 @@ udpServer.on("message", (msg) => {
 
   const base64Data = jpegData.toString("base64");
 
-  io.to(clientId).emit("udpData", {
+  io.to(`rd-${clientId}`).emit("udpData", {
     frameId: frameId,
     clientId: clientId,
     data: base64Data,
