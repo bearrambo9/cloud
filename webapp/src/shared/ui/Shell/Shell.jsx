@@ -1,8 +1,8 @@
-import { AppShell, Burger, Title } from "@mantine/core";
+import { AppShell, Burger, Group, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Navbar from "../Navbar/Navbar";
 
-function Shell({ children, name }) {
+function Shell({ children, name, icon }) {
   const [opened, { toggle }] = useDisclosure();
 
   return (
@@ -25,9 +25,11 @@ function Shell({ children, name }) {
         </AppShell.Navbar>
 
         <AppShell.Main>
-          <Title my={"lg"} fw={400} c={"dimmed"}>
-            {name}
-          </Title>
+          <Group>
+            <Title my={"lg"} fw={400} c={"dimmed"}>
+              {name}
+            </Title>
+          </Group>
           {children}
         </AppShell.Main>
       </AppShell>

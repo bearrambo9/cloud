@@ -1,17 +1,15 @@
 import { Code, Group, Title } from "@mantine/core";
-import { useState } from "react";
 import classes from "./Navbar.module.css";
-
-const data = [
-  { link: "/", title: "Dashboard" },
-  { link: "/clients", title: "Clients" },
-  { link: "/admin", title: "Admin" },
-];
+import { IconLogout } from "@tabler/icons-react";
+import navData from "../../api/navData";
 
 function Navbar() {
-  const links = data.map((item) => (
+  const links = navData.map((item) => (
     <a className={classes.link} href={item.link} key={item.title}>
-      <span>{item.title}</span>
+      <Group>
+        {item.icon}
+        <span>{item.title}</span>
+      </Group>
     </a>
   ));
 
@@ -32,7 +30,10 @@ function Navbar() {
       </div>
       <div className={classes.footer}>
         <a href="#" className={classes.link} onClick={(event) => logout(event)}>
-          <span>Logout</span>
+          <Group>
+            <IconLogout size={22} />
+            <span>Logout</span>
+          </Group>
         </a>
       </div>
     </nav>

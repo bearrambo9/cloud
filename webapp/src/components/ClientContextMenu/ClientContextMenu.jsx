@@ -8,7 +8,6 @@ import {
   IconChartLine,
 } from "@tabler/icons-react";
 import { openTaskManager } from "../../shared/utils/openTaskManager";
-import { useEffect } from "react";
 
 export function ClientContextMenu({
   menuState,
@@ -50,14 +49,6 @@ export function ClientContextMenu({
               </Menu.Sub.Item>
             </Menu.Sub.Target>
 
-            <Menu.Item
-              disabled={menuState.client.connected ? false : true}
-              leftSection={<IconTag size={14} />}
-              onClick={onAddTagClick}
-            >
-              Add Tag
-            </Menu.Item>
-
             <Menu.Sub.Dropdown>
               <Menu.Item
                 leftSection={<IconBrandPowershell size={14} />}
@@ -85,6 +76,14 @@ export function ClientContextMenu({
               </Menu.Item>
             </Menu.Sub.Dropdown>
           </Menu.Sub>
+
+          <Menu.Item
+            disabled={menuState.client.connected ? false : true}
+            leftSection={<IconTag size={14} />}
+            onClick={onAddTagClick}
+          >
+            Add Tag
+          </Menu.Item>
         </Menu.Dropdown>
       </Menu>
     </Paper>

@@ -1,5 +1,9 @@
 import { Paper, Menu } from "@mantine/core";
-import { IconFolderPlus, IconFilePlus } from "@tabler/icons-react";
+import {
+  IconFolderPlus,
+  IconFilePlus,
+  IconBrandPowershell,
+} from "@tabler/icons-react";
 
 export function DirectoryContextMenu({
   menuState,
@@ -7,6 +11,7 @@ export function DirectoryContextMenu({
   onClose,
   onCreateFolder,
   onCreateFile,
+  onOpenInTerminal,
 }) {
   if (!menuState.opened) return null;
 
@@ -41,6 +46,12 @@ export function DirectoryContextMenu({
             onClick={() => onCreateFile(menuState.path)}
           >
             New File
+          </Menu.Item>
+          <Menu.Item
+            leftSection={<IconBrandPowershell size={14} />}
+            onClick={() => onOpenInTerminal(menuState.path)}
+          >
+            Open in Terminal
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>

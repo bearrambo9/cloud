@@ -28,11 +28,14 @@ class PtyHandlers:
                 print("Reader stopped:", ex)
                 break
     
-    def connectPty(self):
+    def connectPty(self, data):
         cols, rows = 80, 30
         
         self.ptyActive = True
         self.pty = winpty.PtyProcess.spawn("cmd.exe", dimensions=(rows, cols))
+
+        if (data['parentDirectory']):   
+            self.pty.write(f'cd /d "{data['parentDirectory']}" && cls \r\n')
         
         self.ptyReaderThread = threading.Thread(target=self.readFromPty, daemon=True)
         self.ptyReaderThread.start()

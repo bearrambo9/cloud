@@ -23,7 +23,7 @@ const ptyHandlers = (socket, io) => {
       const target = io.sockets.sockets.get(clientSocketString);
 
       if (target) {
-        target.emit("connectPty");
+        target.emit("connectPty", data);
         callback({ status: "connected" });
         socket.join(clientId);
       } else {

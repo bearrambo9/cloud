@@ -56,6 +56,13 @@ function FileExplorer() {
     );
   }
 
+  const handleOpenInTerminal = (path) => {
+    window.location = `/shell/${params.clientId.replace(
+      ":",
+      ""
+    )}?parentDirectory=${encodeURIComponent(path)}`;
+  };
+
   const handleOpen = (item) => {
     onPathClick(item.path, item.isFolder);
     closeMenu();
@@ -509,6 +516,7 @@ function FileExplorer() {
         onClose={closeDirMenu}
         onCreateFolder={handleCreateFolder}
         onCreateFile={handleCreateFile}
+        onOpenInTerminal={handleOpenInTerminal}
       />
     </div>
   );

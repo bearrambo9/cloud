@@ -19,7 +19,6 @@ function RemoteDisplay() {
         clientId: params.clientId.replace(":", ""),
       },
       (data) => {
-        console.log(data);
         if (data.status == "connected") {
           notifications.show({
             title: "Connected",
@@ -37,9 +36,6 @@ function RemoteDisplay() {
         }
       }
     );
-
-    let frameCount = 0;
-    let startTime = Date.now();
 
     socket.on("udpData", (data) => {
       setDisplayData(data.data);

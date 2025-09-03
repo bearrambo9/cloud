@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { FitAddon } from "@xterm/addon-fit";
 import socket from "../../shared/api/socket";
 import { useXTerm } from "react-xtermjs";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircleFilled, IconCheck, IconX } from "@tabler/icons-react";
@@ -11,6 +11,7 @@ function ReverseShell() {
   const { instance, ref } = useXTerm();
   const id = useParams();
   const fitAddon = new FitAddon();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     notifications.show({
@@ -24,15 +25,19 @@ function ReverseShell() {
   }, []);
 
   useEffect(() => {
+    const parentDirectory = searchParams.get("parentDirectory");
+
     socket.emit(
       "ptyConnectClient",
       {
         token: localStorage.getItem("token"),
         clientId: id.clientId.replace(":", ""),
+        parentDirectory: parentDirectory,
       },
       (response) => {
         if (response.status == "connected") {
           instance?.writeln(`[CLOUD] Remote Shell | ${id.clientId}`);
+
           socket.emit(
             "getClientData",
             {

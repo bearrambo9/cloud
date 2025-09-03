@@ -24,7 +24,6 @@ function FileExplorerLeaf({
   isFolder,
   onContextMenu,
 }) {
-  const [fileExtension, setFileExtension] = useState("");
   const handleContextMenu = (event) => {
     event.preventDefault();
     event.stopPropagation();
