@@ -9,7 +9,7 @@ Cloud Administration Platform is a Windows remote administration tool that is co
 - X-term shell ✅
 - File explorer ✅
 - Remote display ✅
-- Task Manager ⚠
+- Task Manager
 
 Soon, more features will be added.
 
