@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import socket from "../../shared/api/socket";
 import { useDisclosure } from "@mantine/hooks";
 import Processes from "../../components/Processes/Processes";
+import Performance from "../../components/Performance/Performance";
 
 function TaskManager() {
   const params = useParams();
   const [visible, { toggle }] = useDisclosure(true);
   const [processes, setProcesses] = useState([]);
   const [backgroundProcesses, setBackgroundProcesses] = useState([]);
+  const [performanceData, setPerformanceData] = useState({});
 
   useEffect(() => {
     const sort = (data) => {
@@ -34,16 +36,24 @@ function TaskManager() {
         clientId: params.clientId.replace(":", ""),
       },
       (data) => {
-        const sorted = sort(data);
+        try {
+          const sorted = sort(data.processes);
 
-        setProcesses(sorted[0]);
-        setBackgroundProcesses(sorted[1]);
-        toggle();
+          if (visible) {
+            toggle();
+          }
+
+          setProcesses(sorted[0]);
+          setBackgroundProcesses(sorted[1]);
+          setPerformanceData(data.performanceData || {});
+        } catch {
+          return;
+        }
       }
     );
 
     socket.on("taskManagerData", (data) => {
-      const sorted = sort(data);
+      const sorted = sort(data.processes);
 
       if (visible) {
         toggle();
@@ -51,7 +61,12 @@ function TaskManager() {
 
       setProcesses(sorted[0]);
       setBackgroundProcesses(sorted[1]);
+      setPerformanceData(data.performanceData || {});
     });
+
+    return () => {
+      socket.off("taskManagerData");
+    };
   }, []);
 
   return (
@@ -88,6 +103,9 @@ function TaskManager() {
             backgroundProcessesList={backgroundProcesses}
             processesList={processes}
           />
+        </Tabs.Panel>
+        <Tabs.Panel value="performance">
+          <Performance performanceData={performanceData} />
         </Tabs.Panel>
       </Tabs>
     </div>

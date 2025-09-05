@@ -10,7 +10,7 @@ import {
   Badge,
 } from "@mantine/core";
 import { IconCheck, IconChevronLeft, IconUpload } from "@tabler/icons-react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useMantineColorScheme } from "@mantine/core";
 import { FileExplorerLeaf } from "../../components/FileExplorerLeaf/FileExplorerLeaf";
 import { useFileContextMenu } from "../../hooks/useFileContextMenu";
@@ -34,6 +34,7 @@ function FileExplorer() {
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [data, setData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+  const [searchParams] = useSearchParams();
   const { menuState, ref, handleContextMenu, closeMenu } = useFileContextMenu();
   const {
     dirContextMenuState,
@@ -221,6 +222,8 @@ function FileExplorer() {
   };
 
   useEffect(() => {
+    const path = searchParams.get("path");
+
     socket.emit(
       "getClientRoot",
       {
@@ -229,6 +232,11 @@ function FileExplorer() {
       },
       (root) => {
         setDirectoryPath(root + "/");
+        if (path) {
+          setDirectoryPath(path);
+        } else {
+          setDirectoryPath(data);
+        }
       }
     );
 
@@ -244,8 +252,6 @@ function FileExplorer() {
       }
 
       setDirectoryPath((currentPath) => {
-        console.log("Current directory path:", currentPath);
-
         socket.emit(
           "getClientPathData",
           {
@@ -254,7 +260,7 @@ function FileExplorer() {
             clientId: params.clientId.replace(":", ""),
           },
           (data) => {
-            setData(data);
+            setDirectoryPath(data);
           }
         );
 
@@ -263,10 +269,6 @@ function FileExplorer() {
     };
 
     socket.on("uploadData", handleUploadData);
-
-    return () => {
-      socket.off("uploadData", handleUploadData);
-    };
   }, []);
 
   async function onFilesDrop(files) {

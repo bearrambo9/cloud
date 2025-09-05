@@ -2,9 +2,17 @@ import { ActionIcon, Table } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import socket from "../../shared/api/socket";
 import { useParams } from "react-router-dom";
+import { useProcessContextMenu } from "../../hooks/useProcessContextMenu";
+import { ProcessContextMenu } from "../../components/ProcessContextMenu/ProcessContextMenu";
 
 function ProcessTable({ processes }) {
   const params = useParams();
+  const { menuState, ref, handleContextMenu, closeMenu } =
+    useProcessContextMenu();
+
+  function onOpen(item) {
+    console.log(item);
+  }
 
   function killProcess(pid) {
     socket.emit(
@@ -20,9 +28,30 @@ function ProcessTable({ processes }) {
     );
   }
 
+  function handleOpenInExplorer(process) {
+    socket.emit(
+      "getClientProcessLocation",
+      {
+        processId: process.pid,
+        clientId: params.clientId.replace(":", ""),
+        token: localStorage.getItem("token"),
+      },
+      (path) => {
+        window.opener.location = `/explorer/${params.clientId.replace(
+          ":",
+          ""
+        )}?path=${encodeURIComponent(path)}`;
+      }
+    );
+    closeMenu();
+  }
+
   const rows = processes.map((process) => {
     return (
-      <Table.Tr key={process.pid}>
+      <Table.Tr
+        key={process.pid}
+        onContextMenu={(e) => handleContextMenu(e, process)}
+      >
         <Table.Td>
           <ActionIcon
             onClick={() => killProcess(process.pid)}
@@ -42,18 +71,27 @@ function ProcessTable({ processes }) {
   });
 
   return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th></Table.Th>
-          <Table.Th>Name</Table.Th>
-          <Table.Th>Status</Table.Th>
-          <Table.Th>CPU</Table.Th>
-          <Table.Th>Memory</Table.Th>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>{rows}</Table.Tbody>
-    </Table>
+    <div>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th></Table.Th>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Status</Table.Th>
+            <Table.Th>CPU</Table.Th>
+            <Table.Th>Memory</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{rows}</Table.Tbody>
+      </Table>
+
+      <ProcessContextMenu
+        menuState={menuState}
+        menuRef={ref}
+        onClose={closeMenu}
+        onOpenInExplorer={handleOpenInExplorer}
+      />
+    </div>
   );
 }
 

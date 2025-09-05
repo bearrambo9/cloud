@@ -7,6 +7,42 @@ const taskManagerHandlers = (socket, io) => {
   });
 
   socket.on(
+    "getClientProcessLocation",
+    withAuth(async (data, callback) => {
+      const { clientId, processId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+        return;
+      }
+
+      if (!processId) {
+        callback({ error: "No processId" });
+        return;
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+        return;
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No target" });
+        return;
+      }
+
+      target.emit("getProcessLocation", { processId: processId }, (path) => {
+        callback(path);
+      });
+    })
+  );
+
+  socket.on(
     "startTaskManager",
     withAuth(async (data, callback) => {
       const { clientId } = data;
@@ -30,6 +66,7 @@ const taskManagerHandlers = (socket, io) => {
         callback({ error: "No target" });
         return;
       }
+
       target.emit("startTaskManager", (data) => {
         socket.join(`tm-${clientId}`);
         callback(data);

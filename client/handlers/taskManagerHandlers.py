@@ -1,4 +1,5 @@
 import psutil, win32gui, win32process, threading, time
+from pathlib import Path
 
 class TaskManagerHandlers:
     def __init__(self, socketClient):
@@ -9,6 +10,7 @@ class TaskManagerHandlers:
     def registerEvents(self):
         self.sio.on('startTaskManager')(self.startTaskManager)
         self.sio.on('killProcess')(self.killProcess)
+        self.sio.on('getProcessLocation')(self.getProcessLocation)
 
     def hasVisibleWindow(self, processId):
         def enumWindowsCallback(hwnd, windows):
@@ -22,8 +24,19 @@ class TaskManagerHandlers:
         win32gui.EnumWindows(enumWindowsCallback, windows)
 
         return len(windows) > 0
+    
+    def getProcessLocation(self, data):
+        try:
+            processId = data['processId']
+            process = psutil.Process(processId)
+            path = Path(process.exe())
+            path = str(path.parent)
 
-    def getProcesses(self):
+            return path
+        except:
+            pass
+
+    def getTaskManagerData(self):
         processes = []
 
         for process in psutil.process_iter():
@@ -42,7 +55,45 @@ class TaskManagerHandlers:
             except:
                 pass
 
-        return processes
+        cpuPercent = psutil.cpu_percent(interval=0.1)
+        cpuFreq = psutil.cpu_freq()
+        memory = psutil.virtual_memory()
+        networkIo = psutil.net_io_counters()
+
+        diskIo = psutil.disk_io_counters()
+        networkIo = psutil.net_io_counters()
+
+        performance = {
+            "cpu": {
+                "title": "CPU",
+                "subtitle": f"{cpuPercent}% {cpuFreq.current/1000:.2f} GHz" if cpuFreq else f"{cpuPercent}%",
+                "percentage": f"{cpuPercent}%",
+            },
+            "memory": {
+                "title": "Memory", 
+                "subtitle": f"{memory.used/1024**3:.1f}/{memory.total/1024**3:.1f} GB ({memory.percent:.0f}%)",
+                "percentage": f"{memory.percent:.0f}%",
+            },
+            "disk": {
+                "title": "Disk 0 (C:)",
+                "subtitle": "SSD",
+                "readBytes": diskIo.read_bytes,
+                "writeBytes": diskIo.write_bytes,
+                "readTime": diskIo.read_time,
+                "writeTime": diskIo.write_time,
+            },
+         "network": {
+                "title": "Wi-Fi",
+                "bytesSent": networkIo.bytes_sent,
+                "bytesRecv": networkIo.bytes_recv,
+                "timestamp": time.time()
+            }
+        }
+
+        return {
+            "processes": processes,
+            "performanceData": performance
+        }
     
     def killProcess(self, data):
         try:
@@ -57,8 +108,8 @@ class TaskManagerHandlers:
     def taskManager(self):
         while self.taskManagerActive:
             try:
-                processes = self.getProcesses()
-                self.sio.emit("taskManagerData", processes)
+                taskManagerData = self.getTaskManagerData()
+                self.sio.emit("taskManagerData", taskManagerData)
 
                 time.sleep(2)
             except:
@@ -72,4 +123,4 @@ class TaskManagerHandlers:
         self.taskManagerThread = threading.Thread(target=self.taskManager, daemon=True)
         self.taskManagerThread.start()
 
-        return self.getProcesses()
+        return self.getTaskManagerData()
