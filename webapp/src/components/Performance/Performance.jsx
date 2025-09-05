@@ -1,17 +1,21 @@
 import { Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import PerformanceCard from "../PerformanceCard/PerformanceCard";
+import socket from "../../shared/api/socket";
+import CpuInfo from "../CpuInfo/CpuInfo";
 
 function Performance({ performanceData }) {
+  const [previousNetworkData, setPreviousNetworkData] = useState(null);
+  const [networkStats, setNetworkStats] = useState({ send: 0, recv: 0 });
+  const [hardwareData, setHardwareData] = useState({});
   const [chartData, setChartData] = useState({
     cpu: [],
     memory: [],
     disk: [],
     network: [],
   });
-
-  const [previousNetworkData, setPreviousNetworkData] = useState(null);
-  const [networkStats, setNetworkStats] = useState({ send: 0, recv: 0 });
+  const params = useParams();
 
   useEffect(() => {
     if (performanceData && Object.keys(performanceData).length > 0) {
@@ -80,25 +84,52 @@ function Performance({ performanceData }) {
     setPreviousNetworkData(performanceData.network);
   }, [performanceData]);
 
+  useEffect(() => {
+    socket.emit(
+      "getClientHardwareSpecs",
+      {
+        clientId: params.clientId.replace(":", ""),
+        token: localStorage.getItem("token"),
+      },
+      (data) => {
+        setHardwareData(data);
+        console.log(data);
+      }
+    );
+  }, []);
+
   return (
-    <Stack gap="xs" style={{ padding: 16, width: 250 }}>
-      {Object.entries(performanceData).map(([key, item]) => (
-        <PerformanceCard
-          key={key}
-          title={item.title}
-          subtitle={
-            key === "network"
-              ? `↑ ${networkStats.send} kbps ↓ ${networkStats.recv} kbps`
-              : key === "disk"
-              ? `${parseFloat(item.percentage) || 0}%`
-              : item.subtitle
-          }
-          percentage={item.percentage}
-          data={chartData[key] || []}
-          type={key}
-        />
-      ))}
-    </Stack>
+    <div style={{ overflowX: "auto" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          minWidth: "700px",
+        }}
+      >
+        <Stack gap="xs" style={{ padding: 16, width: 250, flexShrink: 0 }}>
+          {Object.entries(performanceData).map(([key, item]) => (
+            <PerformanceCard
+              key={key}
+              title={item.title}
+              subtitle={
+                key === "network"
+                  ? `↑ ${networkStats.send} kbps ↓ ${networkStats.recv} kbps`
+                  : key === "disk"
+                  ? `${parseFloat(item.percentage) || 0}%`
+                  : item.subtitle
+              }
+              percentage={item.percentage}
+              data={chartData[key] || []}
+              type={key}
+            />
+          ))}
+        </Stack>
+        {hardwareData.cpu && (
+          <CpuInfo data={hardwareData.cpu} chartData={chartData.cpu} />
+        )}
+      </div>
+    </div>
   );
 }
 

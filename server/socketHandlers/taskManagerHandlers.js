@@ -7,6 +7,37 @@ const taskManagerHandlers = (socket, io) => {
   });
 
   socket.on(
+    "getClientHardwareSpecs",
+    withAuth(async (data, callback) => {
+      const { clientId } = data;
+
+      if (!clientId) {
+        callback({ error: "No clientId" });
+        return;
+      }
+
+      const client = await Client.findOne({ id: clientId });
+
+      if (!client) {
+        callback({ error: "No client" });
+        return;
+      }
+
+      const clientSocketString = client.socket;
+      const target = io.sockets.sockets.get(clientSocketString);
+
+      if (!target) {
+        callback({ error: "No target" });
+        return;
+      }
+
+      target.emit("getHardwareSpecs", (data) => {
+        callback(data);
+      });
+    })
+  );
+
+  socket.on(
     "getClientProcessLocation",
     withAuth(async (data, callback) => {
       const { clientId, processId } = data;

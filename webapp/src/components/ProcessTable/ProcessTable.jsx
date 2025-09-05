@@ -10,10 +10,6 @@ function ProcessTable({ processes }) {
   const { menuState, ref, handleContextMenu, closeMenu } =
     useProcessContextMenu();
 
-  function onOpen(item) {
-    console.log(item);
-  }
-
   function killProcess(pid) {
     socket.emit(
       "killClientProcess",

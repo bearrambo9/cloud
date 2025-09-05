@@ -231,11 +231,10 @@ function FileExplorer() {
         clientId: params.clientId.replace(":", ""),
       },
       (root) => {
-        setDirectoryPath(root + "/");
         if (path) {
           setDirectoryPath(path);
         } else {
-          setDirectoryPath(data);
+          setDirectoryPath(root + "/");
         }
       }
     );
@@ -260,7 +259,7 @@ function FileExplorer() {
             clientId: params.clientId.replace(":", ""),
           },
           (data) => {
-            setDirectoryPath(data);
+            setData(data);
           }
         );
 
@@ -269,6 +268,10 @@ function FileExplorer() {
     };
 
     socket.on("uploadData", handleUploadData);
+
+    return () => {
+      socket.off("uploadData", handleUploadData);
+    };
   }, []);
 
   async function onFilesDrop(files) {
