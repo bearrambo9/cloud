@@ -4,12 +4,14 @@ import socket from "../../shared/api/socket";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircleFilled, IconCheck, IconX } from "@tabler/icons-react";
-import { Button } from "@mantine/core";
+import { Button, NativeSelect } from "@mantine/core";
 
 function RemoteDisplay() {
   const params = useParams();
   const [mobile, setMobile] = useState(false);
   const [displayData, setDisplayData] = useState();
+  const [selectedDisplay, setSelectedDisplay] = useState(0);
+  const [availableDisplays, setAvailableDisplays] = useState([]);
 
   useEffect(() => {
     socket.emit(
@@ -20,6 +22,21 @@ function RemoteDisplay() {
       },
       (data) => {
         if (data.status == "connected") {
+          socket.emit(
+            "getDisplays",
+            {
+              token: localStorage.getItem("token"),
+              clientId: params.clientId.replace(":", ""),
+            },
+            (displayData) => {
+              if (displayData && displayData.displays) {
+                setAvailableDisplays(displayData.displays);
+              } else {
+                setAvailableDisplays(["Display 1"]);
+              }
+            }
+          );
+
           notifications.show({
             title: "Connected",
             icon: <IconCheck />,
@@ -108,19 +125,52 @@ function RemoteDisplay() {
     );
   }
 
+  function handleDisplayChange(event) {
+    const displayIndex = parseInt(event.target.value);
+    setSelectedDisplay(displayIndex);
+
+    socket.emit("changeDisplay", {
+      token: localStorage.getItem("token"),
+      clientId: params.clientId.replace(":", ""),
+      displayIndex: displayIndex,
+    });
+  }
+
   function onDisplayClick(e) {
     e.preventDefault();
 
-    const rect = e.target.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+    const img = e.target;
+    const rect = img.getBoundingClientRect();
+
+    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+    const containerAspectRatio = rect.width / rect.height;
+
+    let actualImageWidth, actualImageHeight, offsetX, offsetY;
+
+    if (containerAspectRatio > imgAspectRatio) {
+      actualImageHeight = rect.height;
+      actualImageWidth = rect.height * imgAspectRatio;
+      offsetX = (rect.width - actualImageWidth) / 2;
+      offsetY = 0;
+    } else {
+      actualImageWidth = rect.width;
+      actualImageHeight = rect.width / imgAspectRatio;
+      offsetX = 0;
+      offsetY = (rect.height - actualImageHeight) / 2;
+    }
+
+    const x = (e.clientX - rect.left - offsetX) / actualImageWidth;
+    const y = (e.clientY - rect.top - offsetY) / actualImageHeight;
+
+    const clampedX = Math.max(0, Math.min(1, x));
+    const clampedY = Math.max(0, Math.min(1, y));
 
     socket.emit("displayMouseClick", {
       token: localStorage.getItem("token"),
       clientId: params.clientId.replace(":", ""),
       mouseInfo: {
-        x: x,
-        y: y,
+        x: clampedX,
+        y: clampedY,
         button: e.button,
       },
     });
@@ -129,16 +179,38 @@ function RemoteDisplay() {
   }
 
   function onDisplayMove(e) {
-    const rect = e.target.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+    const img = e.target;
+    const rect = img.getBoundingClientRect();
+
+    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+    const containerAspectRatio = rect.width / rect.height;
+
+    let actualImageWidth, actualImageHeight, offsetX, offsetY;
+
+    if (containerAspectRatio > imgAspectRatio) {
+      actualImageHeight = rect.height;
+      actualImageWidth = rect.height * imgAspectRatio;
+      offsetX = (rect.width - actualImageWidth) / 2;
+      offsetY = 0;
+    } else {
+      actualImageWidth = rect.width;
+      actualImageHeight = rect.width / imgAspectRatio;
+      offsetX = 0;
+      offsetY = (rect.height - actualImageHeight) / 2;
+    }
+
+    const x = (e.clientX - rect.left - offsetX) / actualImageWidth;
+    const y = (e.clientY - rect.top - offsetY) / actualImageHeight;
+
+    const clampedX = Math.max(0, Math.min(1, x));
+    const clampedY = Math.max(0, Math.min(1, y));
 
     socket.emit("displayMouseMove", {
       token: localStorage.getItem("token"),
       clientId: params.clientId.replace(":", ""),
       mouseInfo: {
-        x: x,
-        y: y,
+        x: clampedX,
+        y: clampedY,
       },
     });
   }
@@ -184,6 +256,15 @@ function RemoteDisplay() {
               cursor: "crosshair",
             }}
             alt="Remote Display"
+          />
+          <NativeSelect
+            label="Select display"
+            data={availableDisplays.map((display, index) => ({
+              value: index.toString(),
+              label: display,
+            }))}
+            value={selectedDisplay.toString()}
+            onChange={handleDisplayChange}
           />
           <Button onClick={() => stopRemoteDisplay()} my={"md"}>
             Stop Remote Display
