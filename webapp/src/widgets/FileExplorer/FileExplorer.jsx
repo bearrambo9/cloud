@@ -202,13 +202,17 @@ function FileExplorer() {
       return;
     }
 
-    const currentPath = directoryPath.replace(/\/$/, "");
+    if (directoryPath.match(/^[A-Z]:\/$/)) {
+      setDirectoryPath("DRIVES");
+      return;
+    }
 
-    if (currentPath.match(/^[A-Z]:$/)) {
+    if (directoryPath === "DRIVES") {
       returnToHome();
       return;
     }
 
+    const currentPath = directoryPath.replace(/\/$/, "");
     const lastSlash = currentPath.lastIndexOf("/");
     if (lastSlash === 2) {
       setDirectoryPath(currentPath.substring(0, 3));
@@ -231,10 +235,12 @@ function FileExplorer() {
         clientId: params.clientId.replace(":", ""),
       },
       (root) => {
+        console.log(root);
+
         if (path) {
           setDirectoryPath(path);
         } else {
-          setDirectoryPath(root + "/");
+          setDirectoryPath(root); // This will be "DRIVES"
         }
       }
     );

@@ -1,6 +1,8 @@
 import os
 import requests
 import shutil
+import string
+import platform
 
 class FileExplorerHandlers:
     def __init__(self, socketClient, url):
@@ -21,44 +23,65 @@ class FileExplorerHandlers:
 
     def getShortcut(self, data):
         shortcutName = data['shortcutName']
-        shortcutPath = os.path.expanduser(f"~/{shortcutName}")
+        
+        folderMappings = {
+            'Desktop': os.environ.get('USERPROFILE') + '\\Desktop',
+            'Documents': os.environ.get('USERPROFILE') + '\\Documents',
+            'Downloads': os.environ.get('USERPROFILE') + '\\Downloads',
+            'Pictures': os.environ.get('USERPROFILE') + '\\Pictures',
+            'Videos': os.environ.get('USERPROFILE') + '\\Videos',
+            'Music': os.environ.get('USERPROFILE') + '\\Music'
+        }
+        
+        if shortcutName in folderMappings:
+            shortcutPath = folderMappings[shortcutName]
+        else:
+            shortcutPath = os.path.expanduser(f"~/{shortcutName}")
+        
         shortcutPath = shortcutPath.replace("\\", "/")
-
-        return {"shortcutPath": shortcutPath}
+        
+        if os.path.exists(shortcutPath):
+            return {"shortcutPath": shortcutPath}
+        else:
+            fallback = os.environ.get('USERPROFILE').replace("\\", "/")
+            return {"shortcutPath": fallback}
 
     def saveFileContents(self, data):
         fileData = data['fileData']
         path = data['path']
 
         try:
-            with open(path, "w") as f:
+            with open(path, "w", encoding='utf-8') as f:
                 f.write(fileData)
             
             return {"status": "success", "file": os.path.basename(path)}
-        except:
-            pass
+        except Exception as e:
+            print(f"saveFileContents error: {e}")
     
     def createFile(self, data):
         path = data['path']
 
-        if (os.path.exists(path)):
+        if os.path.exists(path):
             return {"error": "Path already exists"}
         else:
             try:
-                f = open(path, "x")
-            except:
-                return {"error": "Could not create directory"}
+                with open(path, "w") as f:
+                    pass
+                return {"status": "success"}
+            except Exception as e:
+                print(f"createFile error: {e}")
             
     def createFolder(self, data):
         path = data['path']
 
-        if (os.path.exists(path)):
+        if os.path.exists(path):
             return {"error": "Path already exists"}
         else:
             try:
                 os.makedirs(path)
-            except:
-                return {"error": "Could not create directory"}
+                return {"status": "success"}
+            except Exception as e:
+                print(f"createFolder error: {e}")
 
     def renamePath(self, data):
         path = data['path']
@@ -66,19 +89,21 @@ class FileExplorerHandlers:
         
         try:
             os.rename(path, name)
-        except:
-            pass
+            return {"status": "success"}
+        except Exception as e:
+            print(f"renamePath error: {e}")
     
     def deletePath(self, data):
         path = data['path']
         
         try:
-            if (os.path.isfile(path)):
+            if os.path.isfile(path):
                 os.remove(path)
             else:
                 shutil.rmtree(path)
-        except:
-            pass
+            return {"status": "success"}
+        except Exception as e:
+            print(f"deletePath error: {e}")
     
     def downloadFiles(self, data):
         responses = {}
@@ -105,29 +130,57 @@ class FileExplorerHandlers:
         fileData = ""
 
         try:
-            with open(path, "r") as file:
-                fileData = file.read()
-        except: 
-            pass
+            try:
+                with open(path, "r", encoding='utf-8') as file:
+                    fileData = file.read()
+            except UnicodeDecodeError:
+                with open(path, "r", encoding='latin-1') as file:
+                    fileData = file.read()
+        except Exception as e:
+            print(f"getFileData error: {e}")
 
         return fileData
-    
+        
+    def getRoot(self):
+        print("getRoot called, returning: DRIVES")
+        return "DRIVES"
+
     def getPathData(self, data):
         path = data['path']
-        subfolders = [f.path for f in os.scandir(path)]
+        print(f"getPathData called with path: {path}")
+        
+        if path == "DRIVES":
+            print("Handling DRIVES case")
+            drives = []
+            for letter in string.ascii_uppercase:
+                drive = f"{letter}:\\"
+                if os.path.exists(drive):
+                    drives.append({
+                        "path": f"{letter}:/",
+                        "isFolder": True,
+                        "name": f"{letter}: Drive"
+                    })
+            print(f"Found drives: {drives}")
+            return drives
+        
+        print(f"Handling regular path: {path}")
+        try:
+            subfolders = [f.path for f in os.scandir(path)]
+        except Exception as e:
+            print(f"getPathData error: {e}")
+            return []
 
         result = []
-
         for folder in subfolders:
-            safePath = folder.replace("\\", "/")
-            result.append({
-                "path": safePath,
-                "isFolder": os.path.isdir(folder),
-                "name": os.path.basename(folder),
-            })
+            try:
+                safePath = folder.replace("\\", "/")
+                result.append({
+                    "path": safePath,
+                    "isFolder": os.path.isdir(folder),
+                    "name": os.path.basename(folder),
+                })
+            except Exception as e:
+                print(f"getPathData folder error: {e}")
+                continue
 
         return result
-    
-    def getRoot(self):
-        root = os.environ.get('SystemDrive', 'C:')[:2]
-        return root
