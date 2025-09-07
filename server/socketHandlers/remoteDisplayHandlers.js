@@ -20,7 +20,7 @@ const remoteDisplayHandlers = (socket, io) => {
 
       if (!client) {
         console.log(`Client not found: ${clientId}`);
-        callback({ error: `Client not found ${clientId}` });
+        callback({ error: `Client not found: ${clientId}` });
         return;
       }
 
