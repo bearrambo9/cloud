@@ -1,21 +1,19 @@
-## ⚠ Note: _this tool is not stable for use yet, and errors are expected! Soon, these will be fixed as the project is currently in development._
+# Cloud Remote Administration Platform ☁
 
-# Cloud Administration Platform
-
-Cloud Administration Platform is a Windows remote administration tool that is controlled through the browser. Cloud's intended usage is to remotely manage, monitor, and troubleshoot devices for educational or IT enterprise purposes. This tool is a project by me for a highschool tech project.
+Cloud is a Windows remote administration tool that is controlled through the browser. Cloud's intended usage is to remotely manage, monitor, and troubleshoot devices for educational or IT enterprise purposes. This tool is a project by me for a highschool tech competition.
 
 ## Features:
 
-- X-term shell ✅
-- File explorer ✅
-- Remote display ✅
-- Task Manager
+- Web shell. Remote shell using xterm and pty. ✅
+- File explorer supporting all drives. Create, download, upload, delete, and write files. Open directory in terminal. ✅
+- Remote display. Supports multiple monitors. Clicking and typing. ✅
+- Task Manager. Open process in file explorer. Kill processes. The rest of task manager is not fully done, coming soon ⚠
+- Issues. Report issues to administrators allowing them to see the status and connect to the remote desktop. Not added yet, coming soon ⚠
+- Client and server installations. Client and server installalers + persistance across restarts. Not done yet, coming soon ⚠
 
-Soon, more features will be added.
+# Remote Display Demo
 
-# Screenshots
 
-<img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/3742f84f-694f-4761-a702-d4a6c01434a4" />
-<img width="1920" height="966" alt="image" src="https://github.com/user-attachments/assets/e611a536-eef3-4c72-9bdb-250af7deaf0f" />
-<img width="1920" height="972" alt="image" src="https://github.com/user-attachments/assets/c0818efd-12bf-4e8f-a82c-38b66e4b7dbb" />
-<img width="1920" height="965" alt="image" src="https://github.com/user-attachments/assets/d5abbdac-35a2-4e3e-8e04-21e78826659c" />
+
+https://github.com/user-attachments/assets/fed26dae-6268-47ac-b48d-b5c02f56aeac
+
