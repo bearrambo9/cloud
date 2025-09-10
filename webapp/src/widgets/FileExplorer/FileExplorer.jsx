@@ -240,7 +240,7 @@ function FileExplorer() {
         if (path) {
           setDirectoryPath(path);
         } else {
-          setDirectoryPath(root); // This will be "DRIVES"
+          setDirectoryPath(root);
         }
       }
     );
@@ -314,6 +314,12 @@ function FileExplorer() {
       console.log(error);
     }
   }
+
+  const isImageFile = (filePath) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
+    const extension = filePath.split(".").pop()?.toLowerCase();
+    return imageExtensions.includes(extension);
+  };
 
   function saveFileContents() {
     socket.emit(
@@ -440,7 +446,6 @@ function FileExplorer() {
           Music
         </Badge>
       </Group>
-
       {selectedFilePath ? (
         <div>
           <Popover position={"top"} shadow={"md"} opened={opened}>
@@ -463,22 +468,44 @@ function FileExplorer() {
               <Text size="sm">Save file contents</Text>
             </Popover.Dropdown>
           </Popover>
+
           {isLoadingFile ? (
             <Group>
               <Loader size="sm" />
               <Text>Loading file content...</Text>
             </Group>
-          ) : null}
-          <Textarea
-            autosize
-            maxRows={25}
-            value={fileData}
-            onChange={handleFileDataChange}
-            placeholder={
-              isLoadingFile ? "Loading..." : "File content will appear here..."
-            }
-            disabled={isLoadingFile}
-          />
+          ) : isImageFile(selectedFilePath) ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <img
+                src={`data:image/png;base64,${fileData}`}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "70vh",
+                  objectFit: "contain",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                }}
+                alt={selectedFilePath.split("/").pop()}
+                onError={() => console.log("Image failed to load")}
+              />
+              <Text size="sm" c="dimmed" mt="sm">
+                {selectedFilePath.split("/").pop()}
+              </Text>
+            </div>
+          ) : (
+            <Textarea
+              autosize
+              maxRows={25}
+              value={fileData}
+              onChange={handleFileDataChange}
+              placeholder={
+                isLoadingFile
+                  ? "Loading..."
+                  : "File content will appear here..."
+              }
+              disabled={isLoadingFile}
+            />
+          )}
         </div>
       ) : (
         <div>
