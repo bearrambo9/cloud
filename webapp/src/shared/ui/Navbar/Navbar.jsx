@@ -2,10 +2,18 @@ import { Code, Group, Title } from "@mantine/core";
 import classes from "./Navbar.module.css";
 import { IconLogout } from "@tabler/icons-react";
 import navData from "../../api/navData";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
+
   const links = navData.map((item) => (
-    <a className={classes.link} href={item.link} key={item.title}>
+    <a
+      className={classes.link}
+      style={{ cursor: "pointer" }}
+      onClick={() => navigate(item.link)}
+      key={item.title}
+    >
       <Group>
         {item.icon}
         <span>{item.title}</span>
