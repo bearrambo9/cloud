@@ -22,10 +22,11 @@ const dataHandlers = require("./socketHandlers/dataHandlers");
 const fileExplorerHandlers = require("./socketHandlers/fileExplorerHandlers");
 const remoteDisplayHandlers = require("./socketHandlers/remoteDisplayHandlers");
 const taskManagerHandlers = require("./socketHandlers/taskManagerHandlers");
+const issueHandlers = require("./socketHandlers/issueHandlers");
 
 mongoose.connect(process.env.MONGO_URL);
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 
@@ -37,6 +38,7 @@ app.get("/download", (req, res) => {
 });
 
 app.use("/", require("./routes/authRoute"));
+app.use("/", require("./routes/issueRoute")(io));
 app.use("/", require("./routes/uploadRoute")(io));
 
 // RemoteDisplay UDP Server
@@ -65,7 +67,8 @@ io.on("connection", (socket) => {
   dataHandlers(socket, io);
   remoteDisplayHandlers(socket, io);
   taskManagerHandlers(socket, io);
+  issueHandlers(socket);
 });
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000, "0.0.0.0");
 udpServer.bind(process.env.UDP_PORT || 9999);
