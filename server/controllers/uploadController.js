@@ -6,60 +6,68 @@ const fs = require("fs").promises;
 const tempUploads = path.join(__dirname, "../tempUploads");
 
 const uploadFiles = (io) => async (req, res) => {
-  const tokenValidation = await validateToken(req.body.token);
-  var files = {};
+  try {
+    const tokenValidation = await validateToken(req.body.token);
 
-  req.body.files.forEach((file) => {
-    files[file.name] = { completed: false };
-  });
-
-  if (tokenValidation.valid) {
-    try {
-      const result = await File.create({
-        clientId: req.body.clientId,
-        targetPath: req.body.targetPath,
-        status: "inProgress",
-        files: files,
-        creator: tokenValidation.user.email,
-      });
-
-      try {
-        await Promise.all(
-          req.body.files.map(async (file) => {
-            const base64 = file["data"];
-            const decodedBase64 = atob(base64);
-
-            await fs.writeFile(
-              tempUploads + `/${file.name}-${req.body.clientId}`,
-              decodedBase64
-            );
-          })
-        );
-
-        console.log("Uploaded all files!");
-        const client = await Client.findOne({ id: req.body.clientId });
-
-        var links = {};
-
-        req.body.files.map((file) => {
-          links[
-            `/${file.name}-${req.body.clientId}`
-          ] = `${req.body.targetPath}/${file.name}`;
-        });
-
-        io.to(client.socket).emit("downloadFiles", {
-          urls: links,
-        });
-      } catch (error) {
-        console.log(`Failed to upload files: ` + error);
-        return res.json({ error: "Failed to upload file" });
-      }
-    } catch (error) {
-      console.log(`Failed to upload files: ` + error);
-      return res.json({ error: "Failed to upload file" });
+    if (!tokenValidation.valid) {
+      return res.json({ error: "Invalid token" });
     }
-  } else {
-    return res.json({ error: "Invalid token" });
+
+    const { clientId, targetPath, files } = req.body;
+
+    if (!clientId || !targetPath || !files || files.length === 0) {
+      return res.json({ error: "Missing required fields" });
+    }
+
+    const fileMap = {};
+    files.forEach((file) => {
+      fileMap[file.name] = { completed: false };
+    });
+
+    const result = await File.create({
+      clientId,
+      targetPath,
+      status: "inProgress",
+      files: fileMap,
+      creator: tokenValidation.user.email,
+    });
+
+    await Promise.all(
+      files.map(async (file) => {
+        const base64Data = file.data.includes(",")
+          ? file.data.split(",")[1]
+          : file.data;
+
+        const buffer = Buffer.from(base64Data, "base64");
+        const safeName = path.basename(file.name);
+
+        await fs.writeFile(
+          path.join(tempUploads, `${safeName}-${clientId}`),
+          buffer
+        );
+      })
+    );
+
+    console.log("Uploaded all files!");
+
+    const client = await Client.findOne({ id: clientId });
+
+    if (!client) {
+      return res.json({ error: "Client not found" });
+    }
+
+    const links = {};
+    files.forEach((file) => {
+      const safeName = path.basename(file.name);
+      links[`/${safeName}-${clientId}`] = `${targetPath}/${file.name}`;
+    });
+
+    io.to(client.socket).emit("downloadFiles", { urls: links });
+
+    return res.json({ success: true, message: "Files uploaded successfully" });
+  } catch (error) {
+    console.error("Upload error:", error);
+    return res.json({ error: "Failed to upload files" });
   }
 };
 
