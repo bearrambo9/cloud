@@ -25,7 +25,6 @@ const clientIcon = new L.divIcon({
 });
 
 function Dashboard() {
-  // 39.8283, -98.5795
   const [clients, setClients] = useState([]);
   const [serverData, setServerData] = useState();
 
@@ -34,15 +33,7 @@ function Dashboard() {
       "getServerData",
       { token: localStorage.getItem("token") },
       (data) => {
-        //setServerData(data);
-        setServerData({
-          ip: "127.0.0.1",
-          lat: 39.8283,
-          lng: -98.5795,
-          region: "Georgia",
-          country: "United States",
-          city: "Rossville",
-        });
+        setServerData(data);
       }
     );
 

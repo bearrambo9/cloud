@@ -78,7 +78,6 @@ export function ClientContextMenu({
           </Menu.Sub>
 
           <Menu.Item
-            disabled={menuState.client.connected ? false : true}
             leftSection={<IconTag size={14} />}
             onClick={onAddTagClick}
           >

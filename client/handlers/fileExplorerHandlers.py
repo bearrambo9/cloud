@@ -3,6 +3,8 @@ import requests
 import shutil
 import string
 import platform
+import base64
+import mimetypes
 
 class FileExplorerHandlers:
     def __init__(self, socketClient, url):
@@ -49,18 +51,15 @@ class FileExplorerHandlers:
     def saveFileContents(self, data):
         fileData = data['fileData']
         path = data['path']
-
         try:
             with open(path, "w", encoding='utf-8') as f:
                 f.write(fileData)
-            
             return {"status": "success", "file": os.path.basename(path)}
         except Exception as e:
             print(f"saveFileContents error: {e}")
     
     def createFile(self, data):
         path = data['path']
-
         if os.path.exists(path):
             return {"error": "Path already exists"}
         else:
@@ -73,7 +72,6 @@ class FileExplorerHandlers:
             
     def createFolder(self, data):
         path = data['path']
-
         if os.path.exists(path):
             return {"error": "Path already exists"}
         else:
@@ -86,7 +84,6 @@ class FileExplorerHandlers:
     def renamePath(self, data):
         path = data['path']
         name = data['newName']
-        
         try:
             os.rename(path, name)
             return {"status": "success"}
@@ -95,7 +92,6 @@ class FileExplorerHandlers:
     
     def deletePath(self, data):
         path = data['path']
-        
         try:
             if os.path.isfile(path):
                 os.remove(path)
@@ -107,39 +103,42 @@ class FileExplorerHandlers:
     
     def downloadFiles(self, data):
         responses = {}
-
         for url in data['urls']:
             response = requests.get(self.URL + "/download?file=" + url)
-
             if response.status_code == 200:
                 print(url + " downloaded successfully")
                 fileName = url.split("-")[0].replace("/", "")
                 filePath = data['urls'][url]
-             
                 with open(filePath, "wb") as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:  
                             file.write(chunk)
-
                 responses[fileName] = True
-
         self.sio.emit("uploadData", responses)
     
     def getFileData(self, data):
         path = data['path']
-        fileData = ""
-
         try:
-            try:
-                with open(path, "r", encoding='utf-8') as file:
-                    fileData = file.read()
-            except UnicodeDecodeError:
-                with open(path, "r", encoding='latin-1') as file:
-                    fileData = file.read()
+            mimeType, _ = mimetypes.guess_type(path)
+            if mimeType and mimeType.startswith('image/'):
+                with open(path, "rb") as file:
+                    binaryData = file.read()
+                    base64Data = base64.b64encode(binaryData).decode('utf-8')
+                    return {
+                        "data": base64Data,
+                        "mimeType": mimeType,
+                        "isImage": True
+                    }
+            else:
+                try:
+                    with open(path, "r", encoding='utf-8') as file:
+                        return {"data": file.read(), "isImage": False}
+                except UnicodeDecodeError:
+                    with open(path, "r", encoding='latin-1') as file:
+                        return {"data": file.read(), "isImage": False}
         except Exception as e:
             print(f"getFileData error: {e}")
-
-        return fileData
+            return {"data": "", "isImage": False}
         
     def getRoot(self):
         print("getRoot called, returning: DRIVES")

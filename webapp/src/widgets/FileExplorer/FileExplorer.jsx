@@ -30,7 +30,7 @@ function FileExplorer() {
   const [directoryPath, setDirectoryPath] = useState("");
   const [opened, { close, open }] = useDisclosure(false);
   const [selectedFilePath, setSelectedFilePath] = useState("");
-  const [fileData, setFileData] = useState("");
+  const [fileData, setFileData] = useState({});
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [data, setData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
@@ -173,11 +173,11 @@ function FileExplorer() {
     if (isFolder) {
       setDirectoryPath(clickedPath);
       setSelectedFilePath("");
-      setFileData("");
+      setFileData({});
     } else {
       setSelectedFilePath(clickedPath);
       setIsLoadingFile(true);
-      setFileData("");
+      setFileData({});
 
       socket.emit(
         "getClientFileData",
@@ -187,7 +187,8 @@ function FileExplorer() {
           path: clickedPath,
         },
         (data) => {
-          setFileData(data || "");
+          console.log(data);
+          setFileData(data || {});
           setIsLoadingFile(false);
         }
       );
@@ -197,7 +198,7 @@ function FileExplorer() {
   function back() {
     if (selectedFilePath) {
       setSelectedFilePath("");
-      setFileData("");
+      setFileData({});
       setIsLoadingFile(false);
       return;
     }
@@ -222,7 +223,10 @@ function FileExplorer() {
   }
 
   const handleFileDataChange = (event) => {
-    setFileData(event.currentTarget.value);
+    setFileData({
+      ...fileData,
+      data: event.currentTarget.value,
+    });
   };
 
   useEffect(() => {
@@ -315,18 +319,12 @@ function FileExplorer() {
     }
   }
 
-  const isImageFile = (filePath) => {
-    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
-    const extension = filePath.split(".").pop()?.toLowerCase();
-    return imageExtensions.includes(extension);
-  };
-
   function saveFileContents() {
     socket.emit(
       "saveClientFileContents",
       {
         token: localStorage.getItem("token"),
-        fileData: fileData,
+        fileData: fileData.data,
         clientId: params.clientId.replace(":", ""),
         path: selectedFilePath,
       },
@@ -352,7 +350,7 @@ function FileExplorer() {
       },
       (data) => {
         if (data["shortcutPath"]) {
-          setFileData();
+          setFileData({});
           setSelectedFilePath("");
           setDirectoryPath(data["shortcutPath"]);
         }
@@ -474,10 +472,10 @@ function FileExplorer() {
               <Loader size="sm" />
               <Text>Loading file content...</Text>
             </Group>
-          ) : isImageFile(selectedFilePath) ? (
+          ) : fileData.isImage ? (
             <div style={{ textAlign: "center", padding: "20px" }}>
               <img
-                src={`data:image/png;base64,${fileData}`}
+                src={`data:${fileData.mimeType};base64,${fileData.data}`}
                 style={{
                   maxWidth: "100%",
                   maxHeight: "70vh",
@@ -496,7 +494,7 @@ function FileExplorer() {
             <Textarea
               autosize
               maxRows={25}
-              value={fileData}
+              value={fileData.data || ""}
               onChange={handleFileDataChange}
               placeholder={
                 isLoadingFile
