@@ -12,6 +12,7 @@ from handlers.winElevenPtyHandlers import PtyHandlers as WinPtyHandlers
 from handlers.fileExplorerHandlers import FileExplorerHandlers
 from handlers.remoteDisplayHandlers import RemoteDisplayHandlers
 from handlers.taskManagerHandlers import TaskManagerHandlers
+from handlers.serviceHandlers import ServiceHandlers
 from dotenv import load_dotenv
 from PIL import Image
 
@@ -26,8 +27,6 @@ URL = f"{URL}:{PORT}"
 DEV = os.getenv("DEV")
 UDP_SERVER_IP = os.getenv("UDP_SERVER_IP")
 UDP_SERVER_PORT = int(os.getenv("UDP_SERVER_PORT"))
-
-# Tray icon
 
 def onQuit():
     icon.stop()
@@ -63,12 +62,14 @@ ptyHandlers = getPtyHandler(sio)
 remoteDisplayHandlers = RemoteDisplayHandlers(sio, UDP_SERVER_IP, UDP_SERVER_PORT)
 fileExplorerHandlers = FileExplorerHandlers(sio, URL)
 taskManagerHandlers = TaskManagerHandlers(sio)
+serviceHandlers = ServiceHandlers(sio)
 
 clientHandlers.registerEvents()
 ptyHandlers.registerEvents()
 fileExplorerHandlers.registerEvents()
 remoteDisplayHandlers.registerEvents()
 taskManagerHandlers.registerEvents()
+serviceHandlers.registerEvents()
 
 sio.connect(URL)
 

@@ -1,10 +1,11 @@
 import { Button, Divider, Group, LoadingOverlay, Tabs } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import socket from "../../shared/api/socket";
 import { useDisclosure } from "@mantine/hooks";
+import socket from "../../shared/api/socket";
 import Processes from "../../components/Processes/Processes";
 import Performance from "../../components/Performance/Performance";
+import Services from "../../components/Services/Services";
 
 function TaskManager() {
   const params = useParams();
@@ -93,8 +94,6 @@ function TaskManager() {
           <Tabs.Tab value="processes">Processes</Tabs.Tab>
           <Tabs.Tab value="performance">Performance</Tabs.Tab>
           <Tabs.Tab value="startup">Startup</Tabs.Tab>
-          <Tabs.Tab value="users">Users</Tabs.Tab>
-          <Tabs.Tab value="details">Details</Tabs.Tab>
           <Tabs.Tab value="services">Services</Tabs.Tab>
         </Tabs.List>
 
@@ -106,6 +105,9 @@ function TaskManager() {
         </Tabs.Panel>
         <Tabs.Panel value="performance">
           <Performance performanceData={performanceData} />
+        </Tabs.Panel>
+        <Tabs.Panel value="services">
+          <Services />
         </Tabs.Panel>
       </Tabs>
     </div>

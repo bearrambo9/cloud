@@ -14,9 +14,7 @@ const ptyHandlers = (socket, io) => {
       const client = await Client.findOne({ id: clientId });
 
       if (!client) {
-        console.log(`Client not found: ${clientId}`);
         callback({ error: `Client not found ${clientId}` });
-        return;
       }
 
       const clientSocketString = client.socket;
