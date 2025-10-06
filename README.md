@@ -4,12 +4,12 @@ Cloud is a Windows remote administration tool that is controlled through the bro
 
 ## Features:
 
--- Shell in Web Browser
--- Remote display
--- File Explorer
--- In progress task manager
+- Shell in Web Browser
+- Remote display
+- File Explorer
+- In progress task manager
 
--- Issues page. Clients can create issues with file attachments. Admins can view the issue, archive, and connect to the computer.
+- Issues page. Clients can create issues with file attachments. Admins can view the issue, archive, and connect to the computer.
 
 ## About
 
