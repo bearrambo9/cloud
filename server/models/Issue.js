@@ -24,6 +24,10 @@ const IssueSchema = new mongoose.Schema({
     enum: ["low", "medium", "high"],
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["open", "complete"],
+  },
   name: {
     type: String,
     required: true,

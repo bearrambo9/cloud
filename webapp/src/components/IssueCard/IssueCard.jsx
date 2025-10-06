@@ -2,7 +2,15 @@ import { Card, Group, Text, Badge, ColorSwatch } from "@mantine/core";
 import styles from "./IssueCard.module.css";
 import { useNavigate } from "react-router-dom";
 
-function IssueCard({ name, priority, timestamp, title, description, number }) {
+function IssueCard({
+  name,
+  status,
+  timestamp,
+  priority,
+  title,
+  description,
+  number,
+}) {
   const navigate = useNavigate();
 
   const getTimeAgo = (timestamp) => {
@@ -36,13 +44,23 @@ function IssueCard({ name, priority, timestamp, title, description, number }) {
           <Text size={"lg"}>
             {name} (#{number})
           </Text>
-          <Badge color={"gray"}>{priority}</Badge>
         </Group>
         <Group gap={"sm"}>
           <Text c={"dimmed"} fs={"italic"} size={"md"}>
             {getTimeAgo(timestamp)}
           </Text>
-          <ColorSwatch color="var(--mantine-color-red-5)" />
+          <ColorSwatch
+            color={
+              priority == "low"
+                ? "var(--mantine-color-gray-5)"
+                : priority == "medium"
+                ? "var(--mantine-color-orange-5)"
+                : priority == "high" && "var(--mantine-color-red-5)"
+            }
+          />
+          <Badge color={status == "open" ? "green" : "red"} size={"md"}>
+            {status}
+          </Badge>
         </Group>
       </Group>
       <Text mt={"md"} c={"dimmed"} fs={"italic"} size={"md"}>

@@ -3,11 +3,38 @@ const Issue = require("../models/Issue");
 
 const issueHandlers = (socket) => {
   socket.on(
+    "setIssueStatus",
+    withAuth(async (data, callback) => {
+      const { issueNumber, status } = data;
+
+      if (!issueNumber) {
+        return callback({ error: "No issue number!" });
+      }
+
+      if (!status) {
+        return callback({ error: "No issue status!" });
+      }
+
+      console.log(data);
+
+      const result = await Issue.updateOne(
+        { issueNumber: issueNumber },
+        { status: status }
+      );
+
+      callback({ success: true });
+    })
+  );
+
+  socket.on(
     "getIssues",
     withAuth(async (_, callback) => {
-      const issuesData = await Issue.find();
+      const issuesData = await Issue.find().sort({ timestamp: -1 });
 
-      callback(issuesData);
+      const open = issuesData.filter((issue) => issue.status === "open");
+      const closed = issuesData.filter((issue) => issue.status === "closed");
+
+      callback({ open, closed });
     })
   );
 
@@ -17,13 +44,13 @@ const issueHandlers = (socket) => {
       const { issueNumber } = data;
 
       if (!issueNumber) {
-        callback({ error: "No issue number!" });
+        return callback({ error: "No issue number!" });
       }
 
       const issueData = await Issue.findOne({ issueNumber: issueNumber });
 
       if (!issueData) {
-        callback({ error: "No issue found!" });
+        return callback({ error: "No issue found!" });
       }
 
       callback(issueData);

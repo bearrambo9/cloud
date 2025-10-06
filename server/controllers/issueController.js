@@ -42,6 +42,7 @@ const uploadIssue = (io) => async (req, res) => {
       issueNumber: issueNumber,
       priority: priority,
       description: description,
+      status: "open",
       title: title,
       files: files,
     });
