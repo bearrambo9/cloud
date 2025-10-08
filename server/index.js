@@ -24,8 +24,13 @@ const remoteDisplayHandlers = require("./socketHandlers/remoteDisplayHandlers");
 const taskManagerHandlers = require("./socketHandlers/taskManagerHandlers");
 const issueHandlers = require("./socketHandlers/issueHandlers");
 const serviceHandlers = require("./socketHandlers/servicesHandlers");
+const checkUsers = require("./helpers/checkusers");
 
-mongoose.connect(process.env.MONGO_URL);
+console.clear();
+
+mongoose.connect(process.env.MONGO_URL).then(() => {
+  checkUsers();
+});
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
@@ -72,5 +77,9 @@ io.on("connection", (socket) => {
   serviceHandlers(socket, io);
 });
 
-server.listen(process.env.PORT || 3000, "0.0.0.0");
+server.listen(process.env.PORT || 3000, "0.0.0.0", () => {
+  console.log(
+    `Cloud is running at http://localhost:${process.env.PORT || 3000}`
+  );
+});
 udpServer.bind(process.env.UDP_PORT || 9999);

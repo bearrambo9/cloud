@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const registerUser = async (req, res) => {
   const { token } = req.cookies;
 
+  // Change the role stuff below, it's not valid anymore because roles are now enum type
+
   jwt.verify(token, process.env.JWT_SECRET, {}, async (err, user) => {
     if (err) if (err) return res.json({ error: "Invalid token" });
 
