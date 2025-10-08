@@ -61,7 +61,7 @@ const tagHandlers = (socket, io) => {
 
   socket.on(
     "removeTag",
-    withAuth(async (data) => {
+    withAuth(async (data, callback) => {
       const { clientId, tag } = data;
 
       if (!clientId) {

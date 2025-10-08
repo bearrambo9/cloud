@@ -24,6 +24,7 @@ const remoteDisplayHandlers = require("./socketHandlers/remoteDisplayHandlers");
 const taskManagerHandlers = require("./socketHandlers/taskManagerHandlers");
 const issueHandlers = require("./socketHandlers/issueHandlers");
 const serviceHandlers = require("./socketHandlers/servicesHandlers");
+const userHandlers = require("./socketHandlers/userHandlers");
 const checkUsers = require("./helpers/checkusers");
 
 console.clear();
@@ -75,6 +76,7 @@ io.on("connection", (socket) => {
   taskManagerHandlers(socket, io);
   issueHandlers(socket);
   serviceHandlers(socket, io);
+  userHandlers(socket, io);
 });
 
 server.listen(process.env.PORT || 3000, "0.0.0.0", () => {

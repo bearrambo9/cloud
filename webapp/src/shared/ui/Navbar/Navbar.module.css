@@ -43,3 +43,17 @@
   );
   color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
 }
+
+.user {
+  display: block;
+  width: 100%;
+  padding: var(--mantine-spacing-sm);
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
+}
+
+.user:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-8)
+  );
+}

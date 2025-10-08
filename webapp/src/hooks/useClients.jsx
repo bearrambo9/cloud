@@ -34,11 +34,17 @@ export function useClients() {
   }, []);
 
   const removeTag = (item, client) => {
-    socket.emit("removeTag", {
-      token: localStorage.getItem("token"),
-      clientId: client.id,
-      tag: item,
-    });
+    socket.emit(
+      "removeTag",
+      {
+        token: localStorage.getItem("token"),
+        clientId: client.id,
+        tag: item,
+      },
+      (data) => {
+        console.log(data);
+      }
+    );
   };
 
   const addTag = (clientId, tagName, tagColor) => {
