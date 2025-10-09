@@ -3,7 +3,7 @@ import { IconX } from "@tabler/icons-react";
 import socket from "../../shared/api/socket";
 import { useParams } from "react-router-dom";
 import { useProcessContextMenu } from "../../hooks/useProcessContextMenu";
-import { ProcessContextMenu } from "../../components/ProcessContextMenu/ProcessContextMenu";
+import { ProcessContextMenu } from "../ProcessContextMenu/ProcessContextMenu";
 
 function ProcessTable({ processes }) {
   const params = useParams();
