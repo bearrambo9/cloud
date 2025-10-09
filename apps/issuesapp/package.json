@@ -1,0 +1,63 @@
+{
+  "name": "clientapp",
+  "version": "1.0.0",
+  "description": "Issues app for Cloud Remote Administration Platform",
+  "main": "main/index.js",
+  "author": "Bear R",
+  "homepage": "https://github.com/bearrambo9/cloud",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "package": "electron-packager out --overwrite --out=dist --icon=cloud.ico --prune=true",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "npm run build && electron-builder --dir",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux",
+    "make": "electron-forge make"
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
+    "@mantine/core": "^8.2.8",
+    "@mantine/dropzone": "^8.2.8",
+    "@mantine/form": "^8.2.8",
+    "@mantine/hooks": "^8.2.8",
+    "@mantine/notifications": "^8.2.8",
+    "@tabler/icons-react": "^3.34.1",
+    "axios": "^1.11.0",
+    "tabler-icons-react": "^1.56.0",
+    "winreg": "^1.2.5"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config": "^2.0.0",
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^38.0.0",
+    "electron-packager": "^17.1.2",
+    "electron-rebuild": "^3.2.9",
+    "electron-vite": "^4.0.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "prettier": "^3.6.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "vite": "^7.0.5"
+  },
+  "build": {
+    "appId": "com.yourapp.clientapp",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "asar": false
+  }
+}
