@@ -1,26 +1,28 @@
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem("token");
 
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      const isExpired = decoded.exp * 1000 < Date.now();
+  try {
+    const decoded = jwtDecode(token);
+    const isExpired = decoded.exp * 1000 < Date.now();
 
-      if (isExpired) {
-        localStorage.removeItem("token");
-        return <Navigate to="/login" replace />;
-      }
-    } catch (err) {
+    if (isExpired) {
       localStorage.removeItem("token");
       return <Navigate to="/login" replace />;
     }
+
+    if (role && decoded.role !== role) {
+      return <Navigate to="/" replace />;
+    }
+  } catch (err) {
+    localStorage.removeItem("token");
+    return <Navigate to="/login" replace />;
   }
 
   return children;

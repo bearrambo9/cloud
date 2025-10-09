@@ -21,10 +21,16 @@ function Navbar() {
 
   const links = navData.map((item) => (
     <a
-      className={classes.link}
-      style={{ cursor: "pointer" }}
-      onClick={() => navigate(item.link)}
       key={item.title}
+      className={classes.link}
+      style={{
+        cursor: "pointer",
+        display:
+          item.title === "Configuration" && user.role !== "admin"
+            ? "none"
+            : "block",
+      }}
+      onClick={() => navigate(item.link)}
     >
       <Group>
         {item.icon}
@@ -40,6 +46,7 @@ function Navbar() {
       (data) => {
         if (!data.error) {
           setUser(data);
+          console.log(data);
         } else {
           console.log(data);
         }

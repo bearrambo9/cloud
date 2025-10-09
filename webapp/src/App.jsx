@@ -11,6 +11,7 @@ import { Notifications } from "@mantine/notifications";
 import axios from "axios";
 
 import SignIn from "./pages/SignIn/SignIn";
+import Configuration from "./pages/Configuration/Configuration";
 import Dashboard from "./widgets/Dashboard/Dashboard";
 import ProtectedRoute from "./shared/ui/ProtectedRoute/ProtectedRoute";
 import UnprotectedRoute from "./shared/ui/ProtectedRoute/UnauthorizedRoute/UnauthorizedRoute";
@@ -100,6 +101,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <TaskManager />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/configuration"
+            element={
+              <ProtectedRoute role="admin">
+                <Shell children={<Configuration />} name="Configuration" />
               </ProtectedRoute>
             }
           />
