@@ -3,10 +3,15 @@ const Client = require("../models/Client");
 const { validateToken } = require("../utils/tokenValidator");
 const path = require("path");
 const fs = require("fs").promises;
+const fsp = require("fs");
 const tempUploads = path.join(__dirname, "../tempUploads");
 
 const uploadFiles = (io) => async (req, res) => {
   try {
+  	if (!fsp.existsSync(tempUploads)) {
+  		fs.mkdir(tempUploads);
+  	}
+  	
     const tokenValidation = await validateToken(req.body.token);
 
     if (!tokenValidation.valid) {

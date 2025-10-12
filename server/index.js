@@ -25,7 +25,7 @@ const taskManagerHandlers = require("./socketHandlers/taskManagerHandlers");
 const issueHandlers = require("./socketHandlers/issueHandlers");
 const serviceHandlers = require("./socketHandlers/servicesHandlers");
 const userHandlers = require("./socketHandlers/userHandlers");
-const checkUsers = require("./helpers/checkusers");
+const checkUsers = require("./helpers/checkUsers");
 
 console.clear();
 
