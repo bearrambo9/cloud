@@ -14,3 +14,5 @@ Cloud is a Windows remote administration tool that is controlled through the bro
 ## About
 
 For a school project, hopefully it does good
+
+Update: 2026 GASTC Tech Competition #1 place in the programming category! (11-12) 🍾🍾🍾🥳
